@@ -109,7 +109,7 @@ export default function ImageList() {
     }, []);
 
     useEffect(() => {
-        document.title = 'Podmanman - Images';
+        document.title = 'ContainerUp - Images';
     }, []);
 
     return (

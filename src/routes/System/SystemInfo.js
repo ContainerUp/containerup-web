@@ -57,7 +57,7 @@ export default function SystemInfo() {
     }, []);
 
     useEffect(() => {
-        document.title = 'Podmanman - System Info';
+        document.title = 'ContainerUp - System Info';
     }, []);
 
     return (

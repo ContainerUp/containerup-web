@@ -104,7 +104,7 @@ export default function ContainersList() {
     }, []);
 
     useEffect(() => {
-        document.title = 'Podmanman - Containers';
+        document.title = 'ContainerUp - Containers';
     }, []);
 
     return (

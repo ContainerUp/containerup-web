@@ -70,7 +70,7 @@ export default function ContainerDetail() {
     }, [containerId]);
 
     useEffect(() => {
-        document.title = 'Podmanman - Container ' + containerId;
+        document.title = 'ContainerUp - Container ' + containerId;
     }, [containerId]);
 
     if (!tabValValid) {

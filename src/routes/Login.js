@@ -52,7 +52,7 @@ export default function Login() {
         <>
             <MyAppBar drawerOpen={false}>
                 <Typography variant="h6" noWrap component="div">
-                    Podmanman
+                    ContainerUp
                 </Typography>
             </MyAppBar>
 

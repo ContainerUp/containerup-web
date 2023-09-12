@@ -57,7 +57,7 @@ export default function ImageDetail() {
     }, [imageId]);
 
     useEffect(() => {
-        document.title = 'Podmanman - Image ' + imageId;
+        document.title = 'ContainerUp - Image ' + imageId;
     }, [imageId]);
 
     return (

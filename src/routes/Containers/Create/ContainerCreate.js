@@ -213,7 +213,7 @@ export default function ContainerCreate() {
     }, [cmd, creating, envs, imageDetail, name, navigate, ports, volumes, workDir]);
 
     useEffect(() => {
-        document.title = 'Podmanman - Create a container';
+        document.title = 'ContainerUp - Create a container';
     }, []);
 
     return (
