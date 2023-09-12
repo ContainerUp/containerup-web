@@ -1,6 +1,7 @@
 import {Box, Tab, Tabs} from "@mui/material";
-import {Link, Outlet, useLocation, useNavigate} from "react-router-dom";
+import {Link, Outlet, useLocation, useNavigate, useParams} from "react-router-dom";
 import {useEffect, useMemo, useState} from "react";
+import {getController} from "../../lib/HostGuestController";
 
 const tabs = [{
     to: "overview",
@@ -13,14 +14,16 @@ const tabs = [{
     label: "Logs"
 }, {
     to: "exec",
-    label: "Exec / Shell"
-}, {
-    to: "statistics",
-    label: "Statistics"
-}, {
-    to: "settings",
-    label: "Settings"
-}];
+    label: "Exec"
+},
+//     {
+//     to: "statistics",
+//     label: "Statistics"
+// }, {
+//     to: "settings",
+//     label: "Settings"
+// }
+];
 
 const tabsMap = {};
 tabs.forEach((t, i) => {
@@ -28,6 +31,7 @@ tabs.forEach((t, i) => {
 })
 
 export default function ContainerDetail() {
+    const {containerId} = useParams();
     const {pathname} = useLocation();
 
     // if pathname is like /containers/0abcde3333 then redirect to overview
@@ -53,6 +57,21 @@ export default function ContainerDetail() {
             navigate('overview');
         }
     }, [tabValValid, navigate])
+
+    useEffect(() => {
+        const ctrl = getController('bar_breadcrumb');
+        const unregister = ctrl.asControllerGuest([{
+            text: 'Containers',
+            href: '/containers'
+        }, {
+            text: containerId
+        }]);
+        return () => unregister();
+    }, [containerId]);
+
+    useEffect(() => {
+        document.title = 'Podmanman - Container ' + containerId;
+    }, [containerId]);
 
     if (!tabValValid) {
         // navigate

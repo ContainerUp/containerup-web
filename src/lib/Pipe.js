@@ -1,18 +1,24 @@
 class Pipe {
-    useWriter() {
-        return data => {
+    constructor() {
+        this._writer = data => {
             setTimeout(() => {
                 if (this.cb) {
                     this.cb(data);
                 }
             });
+        }
+
+        this._onReceive = func => {
+            this.cb = func;
         };
     }
 
+    useWriter() {
+        return this._writer;
+    }
+
     useOnReceive() {
-        return func => {
-            this.cb = func;
-        }
+        return this._onReceive;
     }
 }
 

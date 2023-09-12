@@ -1,13 +1,14 @@
 import {useNavigate, useParams} from "react-router-dom";
-import MyDataTable from "../../components/MyDataTable";
+import MyDataTable from "../../../components/MyDataTable";
 import {useCallback, useEffect, useState} from "react";
-import dataModel from "../../lib/dataModel";
-import {Alert, Chip, Skeleton, Stack, Tooltip} from "@mui/material";
-import ContainerStatus from "./ContainerStatus";
+import dataModel from "../../../lib/dataModel";
+import {Alert, Box, Chip, Skeleton, Stack, Tooltip} from "@mui/material";
+import ContainerStatus from "../ContainerStatus";
 
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
 import IconButton from "@mui/material/IconButton";
-import timeUtil from "../../lib/timeUtil";
+import timeUtil from "../../../lib/timeUtil";
+import sizeUtil from "../../../lib/sizeUtil";
 
 const dataKeys = [
     {
@@ -34,7 +35,13 @@ const dataKeys = [
         label: "Created At",
         dataFunc: resp => {
             const createDate = timeUtil.parseRFC3339Nano(resp.Created);
-            return timeUtil.dateAgo(createDate);
+            return (
+                <Tooltip title={createDate.toLocaleString()}>
+                    <span>
+                        {timeUtil.dateAgo(createDate)}
+                    </span>
+                </Tooltip>
+            );
         }
     },
     {
@@ -55,6 +62,10 @@ const dataKeys = [
         }
     },
     {
+        label: 'Working directory',
+        dataFunc: resp => resp.Config?.WorkingDir
+    },
+    {
         label: "Entrypoint",
         dataFunc: resp => resp.Config?.Entrypoint
     },
@@ -72,26 +83,57 @@ const dataKeys = [
                 </Stack>
             );
         }
-    },
-    {
+    },{
+        label: "Ports",
+        dataFunc: resp => {
+            const ports = [];
+            if (resp.HostConfig && resp.HostConfig.PortBindings) {
+                const pb = resp.HostConfig.PortBindings;
+                Object.keys(pb).forEach(key => {
+                    pb[key]?.forEach(h => {
+                        let ip = '0.0.0.0';
+                        if (h.HostIp) {
+                            ip = h.HostIp;
+                        }
+                        ports.push(`${ip}:${h.HostPort}->${key}`);
+                    })
+                });
+            }
+            return (
+                <Stack>
+                    {ports.map((p, i) => (
+                        <Box key={i}>
+                            {p}
+                        </Box>
+                    ))}
+                </Stack>
+            );
+        }
+    },{
         label: "Size",
         dataFunc: resp => {
-            if (!resp.SizeRootFs && ! resp.SizeRw) {
+            if (!resp.SizeRootFs && !resp.SizeRw) {
                 return (
                     <>
-                    <span>
-                        Not calculated
-                    </span>
+                        <span>
+                            Not calculated
+                        </span>
 
-                        <Tooltip title="Calculate">
-                            <IconButton aria-label="caculate" color="primary" size="small">
-                                <TroubleshootIcon />
-                            </IconButton>
-                        </Tooltip>
+                        {/*<Tooltip title="Calculate">*/}
+                        {/*    <IconButton aria-label="caculate" color="primary" size="small">*/}
+                        {/*        <TroubleshootIcon />*/}
+                        {/*    </IconButton>*/}
+                        {/*</Tooltip>*/}
                     </>
                 );
             }
-            return 'todo';
+            return (
+                <>
+                    {sizeUtil.humanReadableSize(resp.SizeRw)}
+                    {' '}
+                    (virtual {sizeUtil.humanReadableSize(resp.SizeRootFs)})
+                </>
+            );
         },
         valueSx: {padding: '12px 16px'}
     }

@@ -1,16 +1,18 @@
 import MyAppBar from "../components/MyAppBar";
 import MyDrawer from "../components/MyDrawer";
 import MyDrawerItem from "../components/MyDrawerItem";
-import Typography from "@mui/material/Typography";
 import List from "@mui/material/List";
-import {useState} from 'react';
-
-// import DashboardIcon from '@mui/icons-material/Dashboard';
+import {useEffect, useState} from 'react';
+import LogoutIcon from '@mui/icons-material/Logout';
 import StorageIcon from '@mui/icons-material/Storage';
 import AlbumIcon from '@mui/icons-material/Album';
-import {Outlet} from "react-router-dom";
+import Divider from "@mui/material/Divider";
+import InfoIcon from '@mui/icons-material/Info';
+import {Outlet, useNavigate, useOutlet} from "react-router-dom";
 import MyContent from "../components/MyContent";
 import {Box} from "@mui/material";
+import AppBarButtons from "./AppBarButtons";
+import AppBarBreadcrumb from "./AppBarBreadcrumb";
 
 export default function Root() {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -22,13 +24,20 @@ export default function Root() {
         setDrawerOpen(false);
     };
 
+    const outlet = useOutlet();
+    const navigate = useNavigate();
+    useEffect(() => {
+        if (!outlet) {
+            navigate('/containers');
+        }
+    }, [navigate, outlet]);
+
     return (
         <>
             <Box sx={{ display: 'flex' }}>
                 <MyAppBar drawerOpen={drawerOpen} onOpen={handleDrawerOpen}>
-                    <Typography variant="h6" noWrap component="div">
-                        Podmanman
-                    </Typography>
+                    <AppBarBreadcrumb />
+                    <AppBarButtons />
                 </MyAppBar>
                 <MyDrawer open={drawerOpen} onClose={handleDrawerClose}>
                     <List>
@@ -43,12 +52,26 @@ export default function Root() {
                             drawerOpen={drawerOpen}
                             icon={<StorageIcon />}
                             path='/containers'
+                            or={['/containers_create']}
                         />
                         <MyDrawerItem
                             text="Images"
                             drawerOpen={drawerOpen}
                             icon={<AlbumIcon />}
                             path='/images'
+                        />
+                        <Divider />
+                        <MyDrawerItem
+                            text="System Info"
+                            drawerOpen={drawerOpen}
+                            icon={<InfoIcon />}
+                            path='/info'
+                        />
+                        <MyDrawerItem
+                            text={"Logout"}
+                            drawerOpen={drawerOpen}
+                            icon={<LogoutIcon />}
+                            path='/logout'
                         />
                     </List>
                 </MyDrawer>

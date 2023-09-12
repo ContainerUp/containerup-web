@@ -1,20 +1,20 @@
-import ContainerShellSettings from "./ContainerShellSettings";
+import ContainerExecOptions from "./ContainerExecOptions";
 import {useState} from "react";
 import {useParams} from "react-router-dom";
-import TwoWayPipe from "../../../lib/TwoWayPipe";
-import ContainerShellTerminal from "./ContainerShellTerminal";
+import {getTwoWayPipeSides} from "../../../lib/TwoWayPipe";
+import ContainerExecTerminal from "./ContainerExecTerminal";
 
-export default function ContainerShell() {
+export default function ContainerExec() {
     const {containerId} = useParams();
     const [execOpts, setExecOpts] = useState({
         interactive: true,
         tty: true,
-        cmd: '/bin/bash'
+        cmd: 'bash'
     });
 
     const [start, setStart] = useState(false);
 
-    const pipe = new TwoWayPipe();
+    const [settingSide, terminalSide] = getTwoWayPipeSides();
 
     const handleExec = opts => {
         setExecOpts(opts);
@@ -23,15 +23,15 @@ export default function ContainerShell() {
 
     return (
         <>
-            <ContainerShellSettings
+            <ContainerExecOptions
                 execOpts={execOpts}
                 onExec={handleExec}
-                stopPipeSide={pipe.useLeft()}
+                stopPipeSide={settingSide}
             />
-            <ContainerShellTerminal
+            <ContainerExecTerminal
                 containerId={containerId}
                 execOpts={execOpts}
-                stopPipeSide={pipe.useRight()}
+                stopPipeSide={terminalSide}
                 start={start}
             />
         </>

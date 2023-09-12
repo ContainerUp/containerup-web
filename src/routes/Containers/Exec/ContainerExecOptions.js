@@ -4,7 +4,7 @@ import TextField from "@mui/material/TextField";
 import StopIcon from "@mui/icons-material/Stop";
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
-export default function ContainerShellSettings({execOpts, onExec, stopPipeSide}) {
+export default function ContainerExecOptions({execOpts, onExec, stopPipeSide}) {
     const [live, setLive] = useState(false);
     const [cmd, setCmd] = useState(execOpts.cmd);
     const [tty, setTty] = useState(execOpts.tty);
@@ -15,7 +15,8 @@ export default function ContainerShellSettings({execOpts, onExec, stopPipeSide})
         setLive(false);
     });
 
-    const handleExec = () => {
+    const handleSubmit = event => {
+        event.preventDefault();
         setLive(true);
         if (onExec) {
             onExec({
@@ -50,6 +51,8 @@ export default function ContainerShellSettings({execOpts, onExec, stopPipeSide})
             justifyContent="flex-end"
             spacing={1}
             sx={{marginBottom: '8px'}}
+            component="form"
+            onSubmit={handleSubmit}
         >
 
             <FormControlLabel
@@ -90,10 +93,10 @@ export default function ContainerShellSettings({execOpts, onExec, stopPipeSide})
             )}
 
             {!live && (
-                <Button variant="contained" startIcon={<PlayArrowIcon />} onClick={handleExec}>
-                <span style={{width: '60px'}}>
-                    Execute
-                </span>
+                <Button variant="contained" startIcon={<PlayArrowIcon />} type="submit">
+                    <span style={{width: '60px'}}>
+                        Execute
+                    </span>
                 </Button>
             )}
 

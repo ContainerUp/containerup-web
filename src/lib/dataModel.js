@@ -11,8 +11,7 @@ const errors = {
     errWebsocket: new Error('cannot connect websocket')
 }
 
-const cacheInspect = {};
-
+const cacheContainerInspect = {};
 
 const login = (username, password) => {
     return axios.post(prefix + '/login', {
@@ -24,6 +23,23 @@ const login = (username, password) => {
             sessionStorage.setItem(sessionKeyName, loginKey);
         });
 };
+
+const logout = () => {
+    if (!loginKey) {
+        return Promise.reject(errors.errNoLogin);
+    }
+    const key = loginKey;
+
+    loginKey = '';
+    sessionStorage.removeItem(sessionKeyName);
+
+    return axios.post(prefix + '/logout', {
+    }, {
+        headers: {
+            Authorization: 'Bearer ' + key
+        }
+    });
+}
 
 const containerList = (abortController) => {
     if (!loginKey) {
@@ -38,13 +54,28 @@ const containerList = (abortController) => {
         .then(resp => resp.data)
 };
 
+const containerAction = (containerId, action, abortController) => {
+    if (!loginKey) {
+        return Promise.reject(errors.errNoLogin);
+    }
+    return axios.post(prefix + '/container/' + containerId, {
+        action: action
+    },{
+        signal: abortController.signal,
+        headers: {
+            Authorization: 'Bearer ' + loginKey
+        }
+    })
+        .then(resp => resp.data)
+};
+
 const containerInspect = (containerId, readCache, abortController) => {
     if (!loginKey) {
         return Promise.reject(errors.errNoLogin);
     }
 
-    if (readCache && cacheInspect[containerId]) {
-        return Promise.resolve(cacheInspect[containerId].data);
+    if (readCache && cacheContainerInspect[containerId]) {
+        return Promise.resolve(cacheContainerInspect[containerId].data);
     }
 
     return axios.get(prefix + '/container/' + containerId + '/inspect', {
@@ -55,15 +86,15 @@ const containerInspect = (containerId, readCache, abortController) => {
     })
         .then(resp => {
             if (resp.data) {
-                if (cacheInspect[containerId]) {
+                if (cacheContainerInspect[containerId]) {
                     // data is replaced
-                    clearTimeout(cacheInspect[containerId].timeout)
+                    clearTimeout(cacheContainerInspect[containerId].timeout)
                 }
 
-                cacheInspect[containerId] = {
+                cacheContainerInspect[containerId] = {
                     data: resp.data,
                     timeout: setTimeout(() => {
-                        delete cacheInspect[containerId];
+                        delete cacheContainerInspect[containerId];
                     }, 5000)
                 };
             }
@@ -241,6 +272,168 @@ const containerExec = (containerId, execOpts) => {
     }), canceler];
 };
 
+const containerCreate = (containerSpec, abortController) => {
+    if (!loginKey) {
+        return Promise.reject(errors.errNoLogin);
+    }
+    return axios.post(prefix + '/container', containerSpec, {
+        signal: abortController.signal,
+        headers: {
+            Authorization: 'Bearer ' + loginKey
+        }
+    })
+        .then(resp => resp.data)
+}
+
+const imageList = (abortController) => {
+    if (!loginKey) {
+        return Promise.reject(errors.errNoLogin);
+    }
+    return axios.get(prefix + '/image', {
+        signal: abortController.signal,
+        headers: {
+            Authorization: 'Bearer ' + loginKey
+        }
+    })
+        .then(resp => resp.data)
+};
+
+const cacheImageInspect = {};
+
+const imageInspect = (imageId, readCache, abortController) => {
+    if (!loginKey) {
+        return Promise.reject(errors.errNoLogin);
+    }
+
+    if (readCache && cacheImageInspect[imageId]) {
+        return Promise.resolve(cacheImageInspect[imageId].data);
+    }
+
+    return axios.get(prefix + '/image/' + imageId + '/inspect', {
+        signal: abortController.signal,
+        headers: {
+            Authorization: 'Bearer ' + loginKey
+        }
+    })
+        .then(resp => {
+            if (resp.data) {
+                if (cacheImageInspect[imageId]) {
+                    // data is replaced
+                    clearTimeout(cacheImageInspect[imageId].timeout)
+                }
+
+                cacheImageInspect[imageId] = {
+                    data: resp.data,
+                    timeout: setTimeout(() => {
+                        delete cacheImageInspect[imageId];
+                    }, 5000)
+                };
+            }
+            return resp.data;
+        })
+};
+
+const imageAction = (imageId, action, abortController) => {
+    if (!loginKey) {
+        return Promise.reject(errors.errNoLogin);
+    }
+    return axios.post(prefix + '/image/' + imageId, action,{
+        signal: abortController.signal,
+        headers: {
+            Authorization: 'Bearer ' + loginKey
+        }
+    })
+        .then(resp => resp.data)
+};
+
+const imagePull = imageName => {
+    if (!loginKey) {
+        return Promise.reject(errors.errNoLogin);
+    }
+
+    let protocol = 'ws:';
+    if (window.location.protocol === 'https:') {
+        protocol = 'wss:'
+    }
+    let url = protocol + '//' + window.location.host + prefix + '/image/pull';
+
+    const q = new URLSearchParams();
+    q.set('name', imageName);
+    url += '?' + q.toString();
+
+    const ws = new WebSocket(url);
+    const canceler = () => {
+        // console.log('dm: ws close while handshaking')
+        ws.close(1000, 'canceled');
+    };
+
+    return [new Promise((resolve, reject) => {
+        const msgPipe = new Pipe();
+        const msgWriter = msgPipe.useWriter();
+
+        const closePipe = new Pipe();
+        let closeNotified = false;
+        const closeWriter = d => {
+            if (closeNotified) {
+                return;
+            }
+
+            const closeWriter = closePipe.useWriter();
+            closeWriter(d)
+        }
+
+        let open = false;
+        let errClosed = false;
+        ws.addEventListener('message', event => {
+            msgWriter(event.data);
+        });
+        ws.addEventListener('open', () => {
+            ws.send(loginKey);
+
+            open = true;
+            resolve({
+                onReceive: msgPipe.useOnReceive(),
+                onClose: closePipe.useOnReceive(),
+                close: () => {
+                    // console.log('dm: ws close now')
+                    ws.close(1000, 'user terminated the session');
+                }
+            });
+        });
+        ws.addEventListener('error', event => {
+            if (!open) {
+                reject(errors.errWebsocket);
+                return;
+            }
+            ws.close();
+            closeWriter({code: -1, reason: 'websocket error'});
+            errClosed = true;
+        });
+        ws.addEventListener('close', event => {
+            if (errClosed) {
+                return;
+            }
+            const {code, reason} = event;
+            ws.close();
+            closeWriter({code, reason});
+        });
+    }), canceler];
+};
+
+const systemInfo = (abortController) => {
+    if (!loginKey) {
+        return Promise.reject(errors.errNoLogin);
+    }
+
+    return axios.get(prefix + '/system/info', {
+        signal: abortController.signal,
+        headers: {
+            Authorization: 'Bearer ' + loginKey
+        }
+    })
+        .then(resp => resp.data);
+};
+
 const dataModel = {
     errIsNoLogin: e => {
         if (e.response && e.response.status === 401) {
@@ -253,10 +446,21 @@ const dataModel = {
     },
 
     login,
+    logout,
+
     containerList,
+    containerAction,
     containerInspect,
     containerLogs,
-    containerExec
+    containerExec,
+    containerCreate,
+
+    imageList,
+    imageInspect,
+    imageAction,
+    imagePull,
+
+    systemInfo
 };
 
 export default dataModel;

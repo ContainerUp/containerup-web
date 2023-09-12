@@ -1,6 +1,6 @@
 import {
-    Alert,
-    Paper,
+    Alert, Box,
+    Paper, Stack,
     Table,
     TableBody,
     TableCell,
@@ -11,35 +11,51 @@ import {
 } from "@mui/material";
 import MyTableRowsLoader from "../../../components/MyTableRowsLoader";
 import MyTableRowSingle from "../../../components/MyTableRowSingle";
-import {green, red, orange, blue, grey} from "@mui/material/colors";
-import IconButton from "@mui/material/IconButton";
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import StopIcon from '@mui/icons-material/Stop';
-import DeleteIcon from '@mui/icons-material/Delete';
-import SubjectIcon from '@mui/icons-material/Subject';
-import TerminalIcon from '@mui/icons-material/Terminal';
 
 import Link from '@mui/material/Link';
-import { Link as RouterLink } from "react-router-dom";
+import {Link as RouterLink} from "react-router-dom";
 import ContainerStatus from "../ContainerStatus";
 import timeUtil from "../../../lib/timeUtil";
+import {useMemo} from "react";
+import ContainerActions from "./ContainerActions";
 
-export default function ContainersTable({loading, errMsg, containersData}) {
+export default function ContainersTable({loading, errMsg, containersData, onUpdated}) {
+    const cd = useMemo(() => {
+        return containersData.map(c => {
+            c.createdDate = timeUtil.parseRFC3339Nano(c.Created);
+            c.createdAgo = timeUtil.dateAgo(c.createdDate);
 
-    containersData.map(c => {
-        c.CreatedDate = timeUtil.parseRFC3339Nano(c.Created);
-        c.CreatedAgo = timeUtil.dateAgo(c.CreatedDate);
-        return c;
-    });
+            c.idShort = c.Id.substring(0, 12);
+
+            c.ports = []
+            if (c.Ports) {
+                c.Ports.forEach(p => {
+                    let ip = '0.0.0.0';
+                    if (p.host_ip) {
+                        ip = p.host_ip
+                    }
+                    c.ports.push(`${ip}:${p.host_port}=>${p.container_port}/${p.protocol}`);
+                });
+            }
+
+            c.canStart = c.State === 'exited' || c.State === 'created';
+            c.canStop = c.State === 'running';
+            c.canExec = c.State === 'running';
+            c.canDelete = c.State === 'exited' || c.State === 'created';
+
+            return c;
+        });
+    }, [containersData]);
 
     return (
         <TableContainer component={Paper}>
-            <Table stickyHeader sx={{ minWidth: 650 }} aria-label="simple table">
+            <Table stickyHeader sx={{ minWidth: 650 }} aria-label="containers table">
                 <TableHead>
                     <TableRow>
                         <TableCell>Container ID</TableCell>
                         <TableCell>Names</TableCell>
                         <TableCell>Image</TableCell>
+                        <TableCell>Ports</TableCell>
                         <TableCell>Created At</TableCell>
                         <TableCell>Status</TableCell>
                         <TableCell>Actions</TableCell>
@@ -47,11 +63,11 @@ export default function ContainersTable({loading, errMsg, containersData}) {
                 </TableHead>
                 <TableBody>
                     {loading && (
-                        <MyTableRowsLoader rows={3} cols={5} />
+                        <MyTableRowsLoader rows={3} cols={7} sx={{height: '72px'}} />
                     )}
 
                     {!!errMsg && (
-                        <MyTableRowSingle cols={5}>
+                        <MyTableRowSingle cols={7}>
                             <Alert severity="error">
                                 {errMsg}
                             </Alert>
@@ -59,16 +75,16 @@ export default function ContainersTable({loading, errMsg, containersData}) {
                     )}
 
                     {!errMsg && !loading && !containersData.length && (
-                        <MyTableRowSingle cols={5}>
+                        <MyTableRowSingle cols={7}>
                             No container found. Create one?
                         </MyTableRowSingle>
                     )}
 
-                    {containersData.map(c => (
+                    {!errMsg && !loading && cd.map(c => (
                         <TableRow key={c.Id}>
                             <TableCell>
-                                <Link component={RouterLink} to={c.Id.substring(0, 12)}>
-                                    {c.Id.substring(0, 12)}
+                                <Link component={RouterLink} to={c.idShort}>
+                                    {c.idShort}
                                 </Link>
                             </TableCell>
 
@@ -81,9 +97,19 @@ export default function ContainersTable({loading, errMsg, containersData}) {
                             </TableCell>
 
                             <TableCell>
-                                <Tooltip title={c.CreatedDate.toLocaleString()}>
+                                <Stack>
+                                    {c.ports.map((p, i) => (
+                                        <Box key={i}>
+                                            {p}
+                                        </Box>
+                                    ))}
+                                </Stack>
+                            </TableCell>
+
+                            <TableCell>
+                                <Tooltip title={c.createdDate.toLocaleString()}>
                                     <span>
-                                        {c.CreatedAgo}
+                                        {c.createdAgo}
                                     </span>
                                 </Tooltip>
                             </TableCell>
@@ -98,65 +124,7 @@ export default function ContainersTable({loading, errMsg, containersData}) {
                             </TableCell>
 
                             <TableCell>
-                                <Tooltip title="Start">
-                                    <span>
-                                        <IconButton
-                                            aria-label="start"
-                                            sx={{color: green[500]}}
-                                            disabled={c.State !== 'exited' && c.State !== 'created'}
-                                        >
-                                                <PlayArrowIcon />
-                                        </IconButton>
-                                    </span>
-                                </Tooltip>
-
-                                <Tooltip title="Stop">
-                                    <span>
-                                        <IconButton
-                                            aria-label="stop"
-                                            sx={{color: red[900]}}
-                                            disabled={c.State === 'exited' || c.State === 'created'}
-                                        >
-                                            <StopIcon />
-                                        </IconButton>
-                                    </span>
-                                </Tooltip>
-
-                                <Tooltip title="Logs">
-                                    <span>
-                                        <IconButton
-                                            aria-label="logs"
-                                            sx={{color: blue[300]}}
-                                        >
-                                            <SubjectIcon />
-                                        </IconButton>
-                                    </span>
-                                </Tooltip>
-
-                                <Tooltip title="Exec">
-                                    <span>
-                                        <IconButton
-                                            aria-label="exec"
-                                            sx={{color: grey[800]}}
-                                            disabled={c.State === 'exited' || c.State === 'created'}
-                                        >
-                                            <TerminalIcon />
-                                        </IconButton>
-                                    </span>
-                                </Tooltip>
-
-                                <Tooltip title="Delete">
-                                    <span>
-                                        <IconButton
-                                            aria-label="delete"
-                                            sx={{color: orange[300]}}
-                                            disabled={c.State !== 'exited' && c.State !== 'created'}
-                                        >
-                                            <DeleteIcon />
-                                        </IconButton>
-                                    </span>
-                                </Tooltip>
-
+                                <ContainerActions c={c} onUpdated={onUpdated} />
                             </TableCell>
                         </TableRow>
                     ))}

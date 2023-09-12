@@ -11,7 +11,7 @@ const makeResizeData = (cols, rows) => {
     return new Uint8Array([114, Math.floor(cols / 256), cols % 256, Math.floor(rows / 256), rows % 256]);
 };
 
-export default function ContainerShellTerminal({containerId, execOpts, stopPipeSide, start}) {
+export default function ContainerExecTerminal({containerId, execOpts, stopPipeSide, start}) {
     const navigate = useNavigate();
 
     const dataPipe = new TwoWayPipe();
@@ -119,8 +119,9 @@ export default function ContainerShellTerminal({containerId, execOpts, stopPipeS
     useEffect(() => {
         if (!start) {
             const xtWriter = xtSide.useWriter();
-            xtWriter({type: 'data', data: term.reset + term.yellow('Execute a command to start.')});
-            return () => {};
+            const txt = 'Execute a command to start. Make sure the container is running.';
+            xtWriter({type: 'data', data: term.reset + term.yellow(txt)});
+            return;
         }
 
         const closer = connectExec(containerId, execOpts);

@@ -2,16 +2,16 @@ import Pipe from "./Pipe";
 
 class Side {
     constructor(writer, onReceive) {
-        this.writerFunc = writer;
-        this.onReceiveFunc = onReceive;
+        this._writer = d => writer(d);
+        this._onReceive = f => onReceive(f);
     }
 
     useWriter() {
-        return d => this.writerFunc(d);
+        return this._writer;
     }
 
     useOnReceive() {
-        return f => this.onReceiveFunc(f);
+        return this._onReceive;
     }
 }
 
@@ -34,3 +34,8 @@ class TwoWayPipe {
 }
 
 export default TwoWayPipe;
+
+export function getTwoWayPipeSides() {
+    const p = new TwoWayPipe();
+    return [p.useLeft(), p.useRight()];
+}

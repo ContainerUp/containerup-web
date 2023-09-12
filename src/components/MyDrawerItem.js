@@ -4,7 +4,7 @@ import ListItemText from "@mui/material/ListItemText";
 import ListItem from "@mui/material/ListItem";
 import {useLocation, useNavigate} from "react-router-dom";
 
-export default function MyDrawerItem({drawerOpen, text, icon, path}) {
+export default function MyDrawerItem({drawerOpen, text, icon, path, or}) {
     const navigate = useNavigate();
     const {pathname} = useLocation();
 
@@ -16,6 +16,12 @@ export default function MyDrawerItem({drawerOpen, text, icon, path}) {
     if (pathname.indexOf(path) === 0
         && (pathname.length === path.length || pathname[path.length] === '/')) {
         selected = true
+    } else if (or) {
+        or.forEach(u => {
+            if (u === pathname) {
+                selected = true;
+            }
+        });
     }
 
     return (

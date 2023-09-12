@@ -1,27 +1,31 @@
-import {useCallback, useEffect, useMemo, useState} from "react";
-import {useNavigate} from "react-router-dom";
-import dataModel from "../../../lib/dataModel";
-import ContainersTable from "./ContainersTable";
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import {useEffect, useMemo, useState} from "react";
 import {Tooltip} from "@mui/material";
-import {getController} from "../../../lib/HostGuestController";
 import IconButton from "@mui/material/IconButton";
-import RefreshIcon from '@mui/icons-material/Refresh';
-import {Link as RouterLink} from 'react-router-dom';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import RefreshIcon from "@mui/icons-material/Refresh";
+import {useNavigate} from "react-router-dom";
+import {getController} from "../../../lib/HostGuestController";
+import ImagesTable from "./ImagesTable";
+import dataModel from "../../../lib/dataModel";
+import ImagePull from "./ImagePull";
 
-export default function ContainersList() {
+export default function ImageList() {
     const [loading, setLoading] = useState(true)
     const [errMsg, setErrMsg] = useState('');
     const navigate = useNavigate();
-    const [containers, setContainers] = useState([]);
+    const [images, setImages] = useState([]);
+    const [pullDialogOpen, setPullDialogOpen] = useState(false);
 
-    const refreshTable = useCallback(ac => {
-        // setLoading(true);
+    useEffect(() => {
+        if (!loading) {
+            return;
+        }
+
         setErrMsg('');
-
-        dataModel.containerList(ac)
+        const ac = new AbortController()
+        dataModel.imageList(ac)
             .then(resp => {
-                setContainers(resp);
+                setImages(resp);
             })
             .catch(error => {
                 if (ac.signal.aborted) {
@@ -29,7 +33,7 @@ export default function ContainersList() {
                 }
                 if (dataModel.errIsNoLogin(error)) {
                     let query = new URLSearchParams();
-                    query.append('cb', '/containers')
+                    query.append('cb', '/images')
                     navigate('/login?' + query.toString());
                     return;
                 }
@@ -45,18 +49,9 @@ export default function ContainersList() {
                 }
                 setLoading(false);
             });
-    }, [navigate]);
 
-    useEffect(() => {
-        if (!loading) {
-            return;
-        }
-
-        const ac = new AbortController()
-        refreshTable(ac);
         return () => ac.abort();
-    }, [loading, refreshTable]);
-
+    }, [loading, navigate]);
 
     const handleRefresh = () => {
         setLoading(true);
@@ -66,16 +61,26 @@ export default function ContainersList() {
         setLoading(true);
     };
 
+    const handleClickPull = () => {
+        setPullDialogOpen(true);
+    }
+
+    const handlePullDialogClose = shouldRefresh => {
+        if (shouldRefresh) {
+            setLoading(true);
+        }
+        setPullDialogOpen(false)
+    }
+
     const barButtons = useMemo(() => (
         <>
-            <Tooltip title="Create a container">
+            <Tooltip title="Pull an image">
                 <IconButton
-                    aria-label="create a container"
+                    aria-label="pull an container"
                     color="inherit"
-                    to="/containers_create"
-                    component={RouterLink}
+                    onClick={handleClickPull}
                 >
-                    <AddCircleOutlineIcon />
+                    <CloudDownloadIcon />
                 </IconButton>
             </Tooltip>
 
@@ -99,20 +104,24 @@ export default function ContainersList() {
 
     useEffect(() => {
         const ctrl = getController('bar_breadcrumb');
-        const unregister = ctrl.asControllerGuest([{text: 'Containers'}]);
+        const unregister = ctrl.asControllerGuest([{text: 'Images'}]);
         return () => unregister();
     }, []);
 
     useEffect(() => {
-        document.title = 'Podmanman - Containers';
+        document.title = 'Podmanman - Images';
     }, []);
 
     return (
-        <ContainersTable
-            loading={loading}
-            errMsg={errMsg}
-            containersData={containers}
-            onUpdated={handleUpdated}
-        />
+        <>
+            <ImagesTable
+                loading={loading}
+                errMsg={errMsg}
+                imagesData={images}
+                onUpdated={handleUpdated}
+            />
+
+            <ImagePull dialogOpen={pullDialogOpen} onClose={handlePullDialogClose} />
+        </>
     );
 }

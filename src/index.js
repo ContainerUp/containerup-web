@@ -16,68 +16,67 @@ import './index.css';
 import Root from './routes/Root'
 import Login from './routes/Login'
 import ContainersList from "./routes/Containers/List/ContainersList";
-import Images from "./routes/Images";
+import ImageList from "./routes/Images/List/ImageList";
 import ContainerDetail from "./routes/Containers/ContainerDetail";
-import ContainerDetailOverview from "./routes/Containers/ContainerDetailOverview";
-import ContainerDetailInspect from "./routes/Containers/ContainerDetailInspect";
-import ContainerLogs from "./routes/Containers/ContainerLogs/ContainerLogs";
+import ContainerDetailOverview from "./routes/Containers/Overview/ContainerDetailOverview";
+import ContainerDetailInspect from "./routes/Containers/Inspect/ContainerDetailInspect";
+import ContainerLogs from "./routes/Containers/Logs/ContainerLogs";
 import ContainerDetailStatistics from "./routes/Containers/ContainerDetailStatistics";
-import ContainerShell from "./routes/Containers/ContainerShell/ContainerShell";
+import ContainerExec from "./routes/Containers/Exec/ContainerExec";
 import ContainerDetailSettings from "./routes/Containers/ContainerDetailSettings";
+import SystemInfo from "./routes/System/SystemInfo";
+import ImageDetail from "./routes/Images/Detail/ImageDetail";
+import ContainerCreate from "./routes/Containers/Create/ContainerCreate";
+import Logout from "./routes/Logout";
 
-const router = createBrowserRouter([
-    {
-        path: "/",
-        element: <Root />,
-        children: [
-            {
-                path: '/containers',
-                element: <ContainersList />,
-                children: [
-
-                ]
-            },
-            {
-                path: '/containers/:containerId',
-                element: <ContainerDetail />,
-                children: [
-                    {
-                        path: 'overview',
-                        element: <ContainerDetailOverview />
-                    },
-                    {
-                        path: 'inspect',
-                        element: <ContainerDetailInspect />
-                    },
-                    {
-                        path: 'logs',
-                        element: <ContainerLogs />
-                    },
-                    {
-                        path: 'exec',
-                        element: <ContainerShell />
-                    },
-                    {
-                        path: 'statistics',
-                        element: <ContainerDetailStatistics />
-                    },
-                    {
-                        path: 'settings',
-                        element: <ContainerDetailSettings />
-                    }
-                ]
-            },
-            {
-                path: '/images',
-                element: <Images />
-            }
-        ]
-    },
-    {
-        path: "/login",
-        element: <Login />
-    }
-]);
+const router = createBrowserRouter([{
+    path: "/",
+    element: <Root />,
+    children: [{
+        path: '/containers',
+        element: <ContainersList />,
+    }, {
+        path: '/containers_create',
+        element: <ContainerCreate />,
+    }, {
+        path: '/containers/:containerId',
+        element: <ContainerDetail />,
+        children: [{
+            path: 'overview',
+            element: <ContainerDetailOverview />
+        }, {
+            path: 'inspect',
+            element: <ContainerDetailInspect />
+        }, {
+            path: 'logs',
+            element: <ContainerLogs />
+        }, {
+            path: 'exec',
+            element: <ContainerExec />
+        }, {
+            path: 'statistics',
+            element: <ContainerDetailStatistics />
+        }, {
+            path: 'settings',
+            element: <ContainerDetailSettings />
+        }]
+    }, {
+        path: '/images',
+        element: <ImageList />
+    }, {
+        path: '/images/:imageId',
+        element: <ImageDetail />
+    }, {
+        path: '/info',
+        element: <SystemInfo />
+    }]
+}, {
+    path: "/login",
+    element: <Login />
+}, {
+    path: '/logout',
+    element: <Logout />
+}]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

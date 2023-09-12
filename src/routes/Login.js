@@ -12,6 +12,7 @@ export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showAlert, setShowAlert] = useState(false);
     const [errMsg, setErrMsg] = useState('')
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
@@ -19,7 +20,7 @@ export default function Login() {
     const handleSubmit = event => {
         event.preventDefault();
         setLoading(true);
-        setErrMsg('');
+        setShowAlert(false);
         dataModel.login(username, password)
             .then(() => {
                 let to = '/';
@@ -36,6 +37,7 @@ export default function Login() {
                         e = "Incorrect username or password";
                     }
                 }
+                setShowAlert(true);
                 setErrMsg(e);
             })
             .finally(() => {
@@ -43,7 +45,7 @@ export default function Login() {
             })
     }
     const handleCloseSnackbar = () => {
-        setErrMsg('')
+        setShowAlert(false);
     }
 
     return (
@@ -54,8 +56,8 @@ export default function Login() {
                 </Typography>
             </MyAppBar>
 
-            <Snackbar open={!!errMsg} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-                <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
+            <Snackbar open={showAlert} autoHideDuration={5000} onClose={handleCloseSnackbar}>
+                <Alert onClose={handleCloseSnackbar} severity="error">
                     {errMsg}
                 </Alert>
             </Snackbar>
@@ -69,7 +71,7 @@ export default function Login() {
                         label="Username"
                         required
                         value={username}
-                        onChange={e => {setUsername(e.target.value)}}
+                        onChange={e => setUsername(e.target.value)}
                         fullWidth
                         size="small"
                         margin="normal"
@@ -78,7 +80,7 @@ export default function Login() {
                         label="Password"
                         required
                         value={password}
-                        onChange={e => {setPassword(e.target.value)}}
+                        onChange={e => setPassword(e.target.value)}
                         type="password"
                         fullWidth
                         size="small"
@@ -94,8 +96,6 @@ export default function Login() {
                     </LoadingButton>
                 </form>
             </Container>
-
-
 
         </>
     )

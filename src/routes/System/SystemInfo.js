@@ -1,22 +1,28 @@
-import {useNavigate, useParams} from "react-router-dom";
-import {useCallback, useEffect, useState} from "react";
-import dataModel from "../../lib/dataModel";
+import {useEffect, useState} from "react";
+import {useNavigate} from "react-router-dom";
 import {Alert, Paper, Skeleton} from "@mui/material";
+import dataModel from "../../lib/dataModel";
+import {Fragment} from "react";
+import {getController} from "../../lib/HostGuestController";
 
-export default function ContainerDetailInspect() {
-    const {containerId} = useParams();
+export default function SystemInfo() {
     const [errMsg, setErrMsg] = useState('');
     const navigate = useNavigate();
-    const [inspectData, setInspectData] = useState('');
+    const [infoData, setInfoData] = useState('');
+
     const [loading, setLoading] = useState(true);
 
-    const loadInspectData = useCallback(( ac) => {
-        setErrMsg('');
 
-        dataModel.containerInspect(containerId, true, ac)
+    useEffect(() => {
+        if (!loading) {
+            return;
+        }
+
+        const ac = new AbortController();
+        dataModel.systemInfo(ac)
             .then(resp => {
                 const str = JSON.stringify(resp, null, 4);
-                setInspectData(str);
+                setInfoData(str);
             })
             .catch(error => {
                 if (ac.signal.aborted) {
@@ -24,7 +30,7 @@ export default function ContainerDetailInspect() {
                 }
                 if (dataModel.errIsNoLogin(error)) {
                     let query = new URLSearchParams();
-                    query.append('cb', '/containers/' + containerId + '/inspect')
+                    query.append('cb', '/info')
                     navigate('/login?' + query.toString());
                     return;
                 }
@@ -34,14 +40,25 @@ export default function ContainerDetailInspect() {
                 }
                 setErrMsg(e)
             })
-            .finally(() => setLoading(false));
-    }, [navigate, containerId]);
+            .finally(() => {
+                if (ac.signal.aborted) {
+                    return;
+                }
+                setLoading(false);
+            });
+
+        return () => ac.abort();
+    }, [loading, navigate]);
 
     useEffect(() => {
-        const ac = new AbortController()
-        loadInspectData(ac);
-        return () => ac.abort();
-    }, [loadInspectData]);
+        const ctrl = getController('bar_breadcrumb');
+        const unregister = ctrl.asControllerGuest([{text: 'System Info'}]);
+        return () => unregister();
+    }, []);
+
+    useEffect(() => {
+        document.title = 'Podmanman - System Info';
+    }, []);
 
     return (
         <>
@@ -50,7 +67,7 @@ export default function ContainerDetailInspect() {
                     component="pre"
                     sx={{fontSize: '12px', padding: '4px', margin: 0}}
                 >
-                    {inspectData}
+                    {infoData}
                 </Paper>
             )}
 
@@ -59,11 +76,11 @@ export default function ContainerDetailInspect() {
                     sx={{fontSize: '12px', padding: '4px', margin: 0}}
                 >
                     {[...Array(10)].map((row, i) => (
-                        <>
-                            <Skeleton animation="wave" key={i} sx={{width: '35%'}} />
-                            <Skeleton animation="wave" key={i} sx={{width: '45%'}} />
-                            <Skeleton animation="wave" key={i} sx={{width: '55%'}} />
-                        </>
+                        <Fragment key={i}>
+                            <Skeleton animation="wave" sx={{width: '35%'}} />
+                            <Skeleton animation="wave" sx={{width: '45%'}} />
+                            <Skeleton animation="wave" sx={{width: '55%'}} />
+                        </Fragment>
                     ))}
                 </Paper>
             )}
