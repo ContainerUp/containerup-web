@@ -5,10 +5,9 @@ import {useEffect} from "react";
 export default function Logout() {
     const navigate = useNavigate();
 
-    dataModel.logout().catch(() => {});
-
     useEffect(() => {
-        navigate('/');
+        dataModel.logout().catch(() => {});
+        navigate('/login');
     }, [navigate]);
 
     return (
