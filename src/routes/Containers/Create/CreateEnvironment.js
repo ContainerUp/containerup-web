@@ -213,7 +213,7 @@ export default function CreateEnvironment({envs, imageDetail, onEdited, onConfir
         });
         if (imageDetail.Config.Env) {
             imageDetail.Config.Env.forEach(envStr => {
-                const [name, value] = parseEnvStr(envStr);
+                const [name] = parseEnvStr(envStr);
                 if (map[name] === undefined) {
                     total += 1;
                 }

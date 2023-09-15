@@ -4,10 +4,7 @@ const errWebsocket = new Error('cannot connect websocket');
 
 export function receiveOnlyWebsocket(url, loginKey) {
     const ws = new WebSocket(url);
-    const canceler = () => {
-        // console.log('dm: ws close while handshaking')
-        ws.close(1000, 'canceled');
-    };
+    const canceler = () => ws.close(1000, 'canceled');
 
     return [new Promise((resolve, reject) => {
         const msgPipe = new Pipe();
@@ -42,7 +39,7 @@ export function receiveOnlyWebsocket(url, loginKey) {
                 }
             });
         });
-        ws.addEventListener('error', event => {
+        ws.addEventListener('error', () => {
             if (!open) {
                 reject(errWebsocket);
                 return;

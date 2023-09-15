@@ -62,7 +62,7 @@ export default function ImagePull({dialogOpen, onClose}) {
                             <TextField
                                 autoFocus
                                 margin="dense"
-                                label="Name[:Tag|@Digest]"
+                                label="Repository[:Tag|@Digest]"
                                 id="imgname"
                                 fullWidth
                                 size="small"

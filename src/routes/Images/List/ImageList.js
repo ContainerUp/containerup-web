@@ -2,12 +2,12 @@ import {useEffect, useMemo, useState} from "react";
 import {Tooltip} from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
-import RefreshIcon from "@mui/icons-material/Refresh";
 import {useNavigate} from "react-router-dom";
 import {getController} from "../../../lib/HostGuestController";
 import ImagesTable from "./ImagesTable";
 import dataModel from "../../../lib/dataModel";
 import ImagePull from "./ImagePull";
+import {aioProvider} from "../../../lib/dataProvidor";
 
 export default function ImageList() {
     const [loading, setLoading] = useState(true)
@@ -17,49 +17,29 @@ export default function ImageList() {
     const [pullDialogOpen, setPullDialogOpen] = useState(false);
 
     useEffect(() => {
-        if (!loading) {
-            return;
-        }
+        const onData = data => {
+            setImages(data);
+            setLoading(false);
+        };
 
-        setErrMsg('');
-        const ac = new AbortController()
-        dataModel.imageList(ac)
-            .then(resp => {
-                setImages(resp);
-            })
-            .catch(error => {
-                if (ac.signal.aborted) {
-                    return;
-                }
-                if (dataModel.errIsNoLogin(error)) {
-                    let query = new URLSearchParams();
-                    query.append('cb', '/images')
-                    navigate('/login?' + query.toString());
-                    return;
-                }
-                let e = error.toString();
-                if (error.response) {
-                    e = error.response.data;
-                }
-                setErrMsg(e)
-            })
-            .finally(() => {
-                if (ac.signal.aborted) {
-                    return;
-                }
-                setLoading(false);
-            });
+        const onError = error => {
+            if (dataModel.errIsNoLogin(error)) {
+                let query = new URLSearchParams();
+                query.append('cb', '/images')
+                navigate('/login?' + query.toString());
+                return;
+            }
+            let e = error.toString();
+            if (error.response) {
+                e = error.response.data;
+            }
+            setErrMsg(e);
+            setLoading(false);
+        };
 
-        return () => ac.abort();
-    }, [loading, navigate]);
-
-    const handleRefresh = () => {
-        setLoading(true);
-    };
-
-    const handleUpdated = () => {
-        setLoading(true);
-    };
+        const cancel = aioProvider().imagesList(onData, onError);
+        return () => cancel();
+    }, [navigate]);
 
     const handleClickPull = () => {
         setPullDialogOpen(true);
@@ -81,16 +61,6 @@ export default function ImageList() {
                     onClick={handleClickPull}
                 >
                     <CloudDownloadIcon />
-                </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Refresh">
-                <IconButton
-                    aria-label="refresh"
-                    color="inherit"
-                    onClick={handleRefresh}
-                >
-                    <RefreshIcon />
                 </IconButton>
             </Tooltip>
         </>
@@ -118,7 +88,6 @@ export default function ImageList() {
                 loading={loading}
                 errMsg={errMsg}
                 imagesData={images}
-                onUpdated={handleUpdated}
             />
 
             <ImagePull dialogOpen={pullDialogOpen} onClose={handlePullDialogClose} />

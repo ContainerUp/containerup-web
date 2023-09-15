@@ -2,13 +2,14 @@ import {useNavigate, useParams} from "react-router-dom";
 import MyDataTable from "../../../components/MyDataTable";
 import {useCallback, useEffect, useState} from "react";
 import dataModel from "../../../lib/dataModel";
-import {Alert, Box, Chip, Skeleton, Stack, Tooltip} from "@mui/material";
+import {Alert, Box, Chip, Skeleton, Stack} from "@mui/material";
 import ContainerStatus from "../ContainerStatus";
 
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
 import IconButton from "@mui/material/IconButton";
 import timeUtil from "../../../lib/timeUtil";
 import sizeUtil from "../../../lib/sizeUtil";
+import CreatedAt from "../../../components/CreatedAt";
 
 const dataKeys = [
     {
@@ -34,31 +35,30 @@ const dataKeys = [
     {
         label: "Created At",
         dataFunc: resp => {
-            const createDate = timeUtil.parseRFC3339Nano(resp.Created);
             return (
-                <Tooltip title={createDate.toLocaleString()}>
-                    <span>
-                        {timeUtil.dateAgo(createDate)}
-                    </span>
-                </Tooltip>
+                <>
+                    {resp.Created && (
+                        <CreatedAt created3339Nano={resp.Created} />
+                    )}
+                </>
             );
         }
     },
     {
         label: "Status",
         dataFunc: resp => {
-            if (!resp.State) {
-                return '';
-            }
-            const exitDate = timeUtil.parseRFC3339Nano(resp.State.FinishedAt);
-            const startDate = timeUtil.parseRFC3339Nano(resp.State.StartedAt);
-
-            return ContainerStatus({
-                state: resp.State.Status,
-                exitCode: resp.State.ExitCode,
-                exitAt: exitDate,
-                startedAt: startDate
-            });
+            return (
+                <>
+                    {resp.State && (
+                        <ContainerStatus
+                            state={resp.State.Status}
+                            exitCode={resp.State.ExitCode}
+                            exitAt={timeUtil.parseRFC3339Nano(resp.State.FinishedAt)}
+                            startedAt={timeUtil.parseRFC3339Nano(resp.State.StartedAt)}
+                        />
+                    )}
+                </>
+            );
         }
     },
     {

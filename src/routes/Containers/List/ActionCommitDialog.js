@@ -8,22 +8,22 @@ import {
     DialogTitle,
     Snackbar
 } from "@mui/material";
-import TextField from "@mui/material/TextField";
 import {useEffect, useState} from "react";
+import TextField from "@mui/material/TextField";
 import dataModel from "../../../lib/dataModel";
 import {useNavigate} from "react-router-dom";
 
-export default function ImageActionTag({open, img, onClose}) {
+export default function ActionCommitDialog({open, container, onClose}) {
     const navigate = useNavigate();
+    const [actioning, setActioning] = useState(false);
     const [tag, setTag] = useState('');
     const [submitTimes, setSubmitTimes] = useState(0);
-    const [actioning, setActioning] = useState(false);
     const [showAlert, setShowAlert] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
     const [actionErr, setActionErr] = useState('');
 
     const handleDialogClose = () => {
-        onClose(false);
-        setTag('');
+        onClose();
     }
 
     const handleDialogForceClose = () => {
@@ -45,6 +45,9 @@ export default function ImageActionTag({open, img, onClose}) {
     const handleAlertClose = () => {
         setShowAlert(false);
     }
+    const handleSuccessClose = () => {
+        setShowSuccess(false);
+    }
 
     useEffect(() => {
         if (!actioning) {
@@ -52,13 +55,13 @@ export default function ImageActionTag({open, img, onClose}) {
         }
 
         const ac = new AbortController();
-        dataModel.imageAction(img.idShort, {
-            action: 'tag',
+        dataModel.containerAction(container.idShort, {
+            action: 'commit',
             repoTag: tag
         }, ac)
             .then(() => {
-                onClose(tag);
-                setTag('');
+                onClose();
+                setShowSuccess(true);
             })
             .catch(err => {
                 if (ac.signal.aborted) {
@@ -66,7 +69,7 @@ export default function ImageActionTag({open, img, onClose}) {
                 }
                 if (dataModel.errIsNoLogin(err)) {
                     let query = new URLSearchParams();
-                    query.append('cb', '/images')
+                    query.append('cb', '/containers')
                     navigate('/login?' + query.toString());
                     return;
                 }
@@ -85,24 +88,23 @@ export default function ImageActionTag({open, img, onClose}) {
             });
 
         return () => ac.abort();
-    }, [actioning, img, navigate, onClose, tag]);
+    }, [actioning, container, navigate, onClose, tag]);
 
     return (
         <>
             <Dialog
                 open={open}
                 onClose={handleDialogForceClose}
-                aria-labelledby="alert-dialog-title-tag"
-                aria-describedby="alert-dialog-description-tag"
+                aria-labelledby="alert-dialog-title-commit"
+                aria-describedby="alert-dialog-description-commit"
                 disableRestoreFocus
-                fullWidth
             >
-                <DialogTitle id="alert-dialog-title-tag">
-                    Add a tag
+                <DialogTitle id="alert-dialog-title-commit">
+                    Commit container
                 </DialogTitle>
                 <DialogContent>
-                    <DialogContentText id="alert-dialog-description-tag">
-                        Add a tag to the image <b>{img.idShort}</b>
+                    <DialogContentText id="alert-dialog-description-commit">
+                        Commit the container <b>{container.Names[0]}</b> ({container.idShort}) to an image.
                     </DialogContentText>
                     <TextField
                         autoFocus
@@ -118,6 +120,7 @@ export default function ImageActionTag({open, img, onClose}) {
                                 handleDialogConfirm();
                             }
                         }}
+                        disabled={actioning}
                         error={submitTimes > 0 && tag === ''}
                     />
                 </DialogContent>
@@ -126,7 +129,7 @@ export default function ImageActionTag({open, img, onClose}) {
                         Cancel
                     </Button>
                     <Button onClick={handleDialogConfirm} disabled={actioning}>
-                        Add
+                        Commit
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -134,6 +137,12 @@ export default function ImageActionTag({open, img, onClose}) {
             <Snackbar open={showAlert} autoHideDuration={5000} onClose={handleAlertClose}>
                 <Alert severity="error" onClose={handleAlertClose}>{actionErr}</Alert>
             </Snackbar>
+
+            <Snackbar open={showSuccess} autoHideDuration={5000} onClose={handleAlertClose}>
+                <Alert severity="success" onClose={handleSuccessClose}>
+                    Container <b>{container.Names[0]}</b> ({container.idShort}) has been committed to an image with tag <b>{tag}</b>.
+                </Alert>
+            </Snackbar>
         </>
     );
-}
+};

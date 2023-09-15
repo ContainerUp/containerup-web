@@ -13,10 +13,10 @@ export default function ImageActions({img, onDeleted, onTagged}) {
     const [dialogDel, setDialogDel] = useState(false);
     const [dialogTag, setDialogTag] = useState(false);
 
-    const handleDialogDelClose = ok => {
+    const handleDialogDelClose = (ok, delAct) => {
         setDialogDel(false);
         if (ok) {
-            onDeleted();
+            onDeleted(delAct);
         }
     };
 

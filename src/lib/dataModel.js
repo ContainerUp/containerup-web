@@ -14,6 +14,10 @@ const errors = {
 
 const cacheContainerInspect = {};
 
+const getLoginKeyAndPrefix = () => {
+    return [loginKey, prefix];
+}
+
 const login = (username, password) => {
     return axios.post(prefix + '/login', {
         username: username,
@@ -59,9 +63,7 @@ const containerAction = (containerId, action, abortController) => {
     if (!loginKey) {
         return Promise.reject(errors.errNoLogin);
     }
-    return axios.post(prefix + '/container/' + containerId, {
-        action: action
-    },{
+    return axios.post(prefix + '/container/' + containerId, action,{
         signal: abortController.signal,
         headers: {
             Authorization: 'Bearer ' + loginKey
@@ -197,7 +199,7 @@ const containerExec = (containerId, execOpts) => {
 
             rightSideOnReceive(d => ws.send(d));
         });
-        ws.addEventListener('error', event => {
+        ws.addEventListener('error', () => {
             if (!open) {
                 reject(errors.errWebsocket);
                 return;
@@ -324,16 +326,15 @@ const systemInfo = (abortController) => {
 };
 
 const dataModel = {
+    errors,
     errIsNoLogin: e => {
         if (e.response && e.response.status === 401) {
             return true;
         }
-        if (e === errors.errNoLogin) {
-            return true;
-        }
-        return false;
+        return e === errors.errNoLogin;
     },
 
+    getLoginKeyAndPrefix,
     login,
     logout,
 

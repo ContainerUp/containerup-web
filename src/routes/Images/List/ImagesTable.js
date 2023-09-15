@@ -7,26 +7,22 @@ import {
     TableCell,
     TableContainer,
     TableHead,
-    TableRow,
-    Tooltip
+    TableRow
 } from "@mui/material";
 import MyTableRowsLoader from "../../../components/MyTableRowsLoader";
 import MyTableRowSingle from "../../../components/MyTableRowSingle";
 import Link from "@mui/material/Link";
 import {Link as RouterLink} from "react-router-dom";
 import {useMemo, useState} from "react";
-import timeUtil from "../../../lib/timeUtil";
 import sizeUtil from "../../../lib/sizeUtil";
 import ImageActions from "./ImageActions";
+import CreatedAt from "../../../components/CreatedAt";
 
-export default function ImagesTable({loading, errMsg, imagesData, onUpdated}) {
+export default function ImagesTable({loading, errMsg, imagesData}) {
     const imgd = useMemo(() => {
         const ret = [];
 
         for (const img of imagesData) {
-            img.createdDate = new Date(img.Created * 1000);
-            img.createdAgo = timeUtil.dateAgo(img.createdDate);
-
             img.idShort = img.Id.substring(0, 12);
             img.sizeHuman = sizeUtil.humanReadableSize(img.Size);
 
@@ -65,7 +61,7 @@ export default function ImagesTable({loading, errMsg, imagesData, onUpdated}) {
     }, [imagesData]);
 
     const [showDeletedDialog, setShowDeletedDialog] = useState(false);
-    const [deletedImgName, setDeletedImgName] = useState('');
+    const [deletedImg, setDeletedImg] = useState({name: '', action: ''});
     const [showTaggedDialog, setShowTaggedDialog] = useState(false);
     const [tagImageId, setTagImageId] = useState('');
     const [tagName, setTagName] = useState('');
@@ -129,11 +125,7 @@ export default function ImagesTable({loading, errMsg, imagesData, onUpdated}) {
                                 </TableCell>
 
                                 <TableCell>
-                                    <Tooltip title={img.createdDate.toLocaleString()}>
-                                    <span>
-                                        {img.createdAgo}
-                                    </span>
-                                    </Tooltip>
+                                    <CreatedAt createdUnixTimestamp={img.Created} />
                                 </TableCell>
 
                                 <TableCell>
@@ -147,16 +139,17 @@ export default function ImagesTable({loading, errMsg, imagesData, onUpdated}) {
                                 <TableCell>
                                     <ImageActions
                                         img={img}
-                                        onDeleted={() => {
+                                        onDeleted={delAct => {
                                             setShowDeletedDialog(true);
-                                            setDeletedImgName(img.nameOrId);
-                                            onUpdated();
+                                            setDeletedImg({
+                                                name: img.nameOrId,
+                                                action: delAct
+                                            });
                                         }}
                                         onTagged={t => {
                                             setShowTaggedDialog(true);
                                             setTagImageId(img.idShort);
                                             setTagName(t);
-                                            onUpdated();
                                         }}
                                     />
                                 </TableCell>
@@ -169,7 +162,7 @@ export default function ImagesTable({loading, errMsg, imagesData, onUpdated}) {
 
             <Snackbar open={showDeletedDialog} autoHideDuration={5000} onClose={handleDeletedDialogClose}>
                 <Alert severity="success" onClose={handleDeletedDialogClose}>
-                    Image <b>{deletedImgName}</b> deleted.
+                    Image <b>{deletedImg.name}</b> {deletedImg.action}.
                 </Alert>
             </Snackbar>
 

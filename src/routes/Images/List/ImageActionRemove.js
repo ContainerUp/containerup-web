@@ -19,7 +19,7 @@ export default function ImageActionRemove({open, img, onClose}) {
     const [actionErr, setActionErr] = useState('');
 
     const handleDialogClose = () => {
-        onClose(false);
+        onClose(false, '');
     }
 
     const handleDialogForceClose = () => {
@@ -50,8 +50,8 @@ export default function ImageActionRemove({open, img, onClose}) {
             args.repoTag = img.nameOrId;
         }
         dataModel.imageAction(img.idShort, args, ac)
-            .then(() => {
-                onClose(true);
+            .then(d => {
+                onClose(true, d);
             })
             .catch(err => {
                 if (ac.signal.aborted) {

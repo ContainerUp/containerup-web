@@ -6,8 +6,7 @@ import {
     TableCell,
     TableContainer,
     TableHead,
-    TableRow,
-    Tooltip
+    TableRow
 } from "@mui/material";
 import MyTableRowsLoader from "../../../components/MyTableRowsLoader";
 import MyTableRowSingle from "../../../components/MyTableRowSingle";
@@ -15,16 +14,13 @@ import MyTableRowSingle from "../../../components/MyTableRowSingle";
 import Link from '@mui/material/Link';
 import {Link as RouterLink} from "react-router-dom";
 import ContainerStatus from "../ContainerStatus";
-import timeUtil from "../../../lib/timeUtil";
 import {useMemo} from "react";
 import ContainerActions from "./ContainerActions";
+import CreatedAt from "../../../components/CreatedAt";
 
-export default function ContainersTable({loading, errMsg, containersData, onUpdated}) {
+export default function ContainersTable({loading, errMsg, containersData}) {
     const cd = useMemo(() => {
         return containersData.map(c => {
-            c.createdDate = timeUtil.parseRFC3339Nano(c.Created);
-            c.createdAgo = timeUtil.dateAgo(c.createdDate);
-
             c.idShort = c.Id.substring(0, 12);
 
             c.ports = []
@@ -83,7 +79,7 @@ export default function ContainersTable({loading, errMsg, containersData, onUpda
                     {!errMsg && !loading && cd.map(c => (
                         <TableRow key={c.Id}>
                             <TableCell>
-                                <Link component={RouterLink} to={c.idShort}>
+                                <Link component={RouterLink} to={c.idShort + '/overview'}>
                                     {c.idShort}
                                 </Link>
                             </TableCell>
@@ -107,11 +103,7 @@ export default function ContainersTable({loading, errMsg, containersData, onUpda
                             </TableCell>
 
                             <TableCell>
-                                <Tooltip title={c.createdDate.toLocaleString()}>
-                                    <span>
-                                        {c.createdAgo}
-                                    </span>
-                                </Tooltip>
+                                <CreatedAt created3339Nano={c.Created} />
                             </TableCell>
 
                             <TableCell>
@@ -124,7 +116,7 @@ export default function ContainersTable({loading, errMsg, containersData, onUpda
                             </TableCell>
 
                             <TableCell>
-                                <ContainerActions c={c} onUpdated={onUpdated} />
+                                <ContainerActions c={c} />
                             </TableCell>
                         </TableRow>
                     ))}

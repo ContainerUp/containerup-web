@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import dataModel from "../../../lib/dataModel";
 import ContainersTable from "./ContainersTable";
@@ -6,8 +6,8 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import {Tooltip} from "@mui/material";
 import {getController} from "../../../lib/HostGuestController";
 import IconButton from "@mui/material/IconButton";
-import RefreshIcon from '@mui/icons-material/Refresh';
 import {Link as RouterLink} from 'react-router-dom';
+import {aioProvider} from "../../../lib/dataProvidor";
 
 export default function ContainersList() {
     const [loading, setLoading] = useState(true)
@@ -15,56 +15,30 @@ export default function ContainersList() {
     const navigate = useNavigate();
     const [containers, setContainers] = useState([]);
 
-    const refreshTable = useCallback(ac => {
-        // setLoading(true);
-        setErrMsg('');
-
-        dataModel.containerList(ac)
-            .then(resp => {
-                setContainers(resp);
-            })
-            .catch(error => {
-                if (ac.signal.aborted) {
-                    return;
-                }
-                if (dataModel.errIsNoLogin(error)) {
-                    let query = new URLSearchParams();
-                    query.append('cb', '/containers')
-                    navigate('/login?' + query.toString());
-                    return;
-                }
-                let e = error.toString();
-                if (error.response) {
-                    e = error.response.data;
-                }
-                setErrMsg(e)
-            })
-            .finally(() => {
-                if (ac.signal.aborted) {
-                    return;
-                }
-                setLoading(false);
-            });
-    }, [navigate]);
-
     useEffect(() => {
-        if (!loading) {
-            return;
+        const onData = data => {
+            setContainers(data);
+            setLoading(false);
+        };
+
+        const onError = error => {
+            if (dataModel.errIsNoLogin(error)) {
+                let query = new URLSearchParams();
+                query.append('cb', '/containers')
+                navigate('/login?' + query.toString());
+                return;
+            }
+            let e = error.toString();
+            if (error.response) {
+                e = error.response.data;
+            }
+            setErrMsg(e);
+            setLoading(false);
         }
 
-        const ac = new AbortController()
-        refreshTable(ac);
-        return () => ac.abort();
-    }, [loading, refreshTable]);
-
-
-    const handleRefresh = () => {
-        setLoading(true);
-    };
-
-    const handleUpdated = () => {
-        setLoading(true);
-    };
+        const cancel = aioProvider().containersList(onData, onError);
+        return () => cancel();
+    }, [navigate]);
 
     const barButtons = useMemo(() => (
         <>
@@ -79,15 +53,15 @@ export default function ContainersList() {
                 </IconButton>
             </Tooltip>
 
-            <Tooltip title="Refresh">
-                <IconButton
-                    aria-label="refresh"
-                    color="inherit"
-                    onClick={handleRefresh}
-                >
-                    <RefreshIcon />
-                </IconButton>
-            </Tooltip>
+            {/*<Tooltip title="Refresh">*/}
+            {/*    <IconButton*/}
+            {/*        aria-label="refresh"*/}
+            {/*        color="inherit"*/}
+            {/*        onClick={handleRefresh}*/}
+            {/*    >*/}
+            {/*        <RefreshIcon />*/}
+            {/*    </IconButton>*/}
+            {/*</Tooltip>*/}
         </>
     ), []);
 
@@ -112,7 +86,6 @@ export default function ContainersList() {
             loading={loading}
             errMsg={errMsg}
             containersData={containers}
-            onUpdated={handleUpdated}
         />
     );
 }

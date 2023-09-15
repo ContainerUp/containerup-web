@@ -75,6 +75,7 @@ export default function Login() {
                         fullWidth
                         size="small"
                         margin="normal"
+                        autoFocus
                     />
                     <TextField
                         label="Password"
