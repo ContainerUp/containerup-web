@@ -2,6 +2,8 @@ import {Box, Tab, Tabs} from "@mui/material";
 import {Link, Outlet, useLocation, useNavigate, useParams} from "react-router-dom";
 import {useEffect, useMemo, useState} from "react";
 import {getController} from "../../lib/HostGuestController";
+import {aioProvider} from "../../lib/dataProvidor";
+import dataModel from "../../lib/dataModel";
 
 const tabs = [{
     to: "overview",
@@ -47,7 +49,7 @@ export default function ContainerDetail() {
             return [ret, true];
         }
         return [0, false];
-    }, [pathname])
+    }, [pathname]);
 
     const [value, setValue] = useState(tabVal);
     const navigate = useNavigate();
@@ -56,7 +58,7 @@ export default function ContainerDetail() {
         if (!tabValValid) {
             navigate('overview');
         }
-    }, [tabValValid, navigate])
+    }, [tabValValid, navigate]);
 
     useEffect(() => {
         const ctrl = getController('bar_breadcrumb');
@@ -73,33 +75,71 @@ export default function ContainerDetail() {
         document.title = 'ContainerUp - Container ' + containerId;
     }, [containerId]);
 
-    if (!tabValValid) {
-        // navigate
-        return (
-            <></>
-        );
-    }
-
-    const handleChange = (event, newValue) => {
+    const handleTabChange = (event, newValue) => {
         setValue(newValue);
     };
 
+    useEffect(() => {
+        const ctrl = getController('bar_button');
+        const unregister = ctrl.asControllerGuest('container_detail_buttons');
+        return () => unregister();
+    }, []);
+
+    const [container, setContainer] = useState({Id: containerId});
+    const [loading, setLoading] = useState(true);
+    const [errMsg, setErrMsg] = useState('');
+
+    useEffect(() => {
+        const ctrl = getController('container_detail_buttons');
+        const unregister = ctrl.asControllerGuest(container);
+        return () => unregister();
+    }, [container]);
+
+    useEffect(() => {
+        const onData = d => {
+            setContainer(d);
+            setLoading(false);
+        };
+
+        const onError = error => {
+            if (dataModel.errIsNoLogin(error)) {
+                let query = new URLSearchParams();
+                query.append('cb', pathname);
+                navigate('/login?' + query.toString());
+                return;
+            }
+            let e = error.toString();
+            if (error.response) {
+                e = error.response.data;
+            }
+            setErrMsg(e);
+            setLoading(false);
+        };
+
+        const cancel = aioProvider().container(containerId, onData, onError)
+        return () => cancel();
+    }, [containerId, navigate, pathname]);
+
     return (
         <>
-            <Box sx={{ width: '100%', marginBottom: '16px' }}>
-                <Tabs value={value} onChange={handleChange} aria-label="container tabs">
-                    {tabs.map(t => (
-                        <Tab
-                            key={t.to}
-                            component={Link}
-                            label={t.label}
-                            to={t.to}
-                        />
-                    ))}
-                </Tabs>
-            </Box>
+            {tabValValid && (
+                <>
+                    <Box sx={{ width: '100%', marginBottom: '16px' }}>
+                        <Tabs value={value} onChange={handleTabChange} aria-label="container tabs">
+                            {tabs.map(t => (
+                                <Tab
+                                    key={t.to}
+                                    component={Link}
+                                    label={t.label}
+                                    to={t.to}
+                                />
+                            ))}
+                        </Tabs>
+                    </Box>
 
-            <Outlet />
+                    <Outlet context={{container, loading, errMsg}} />
+                </>
+            )}
         </>
     );
 }

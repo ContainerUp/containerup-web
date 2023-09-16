@@ -26,7 +26,7 @@ export default function ImageDetail() {
                 }
                 if (dataModel.errIsNoLogin(error)) {
                     let query = new URLSearchParams();
-                    query.append('cb', '/images/' + imageId)
+                    query.append('cb', '/images/' + imageId);
                     navigate('/login?' + query.toString());
                     return;
                 }

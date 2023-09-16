@@ -6,53 +6,30 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import {useState} from "react";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
-import ImageActionRemove from "./ImageActionRemove";
-import ImageActionTag from "./ImageActionTag";
+import ImageDialogRemove from "./ImageDialogRemove";
+import ImageDialogTag from "./ImageDialogTag";
 
-export default function ImageActions({img, onDeleted, onTagged}) {
+export default function ImageActions({image}) {
     const [dialogDel, setDialogDel] = useState(false);
     const [dialogTag, setDialogTag] = useState(false);
 
-    const handleDialogDelClose = (ok, delAct) => {
-        setDialogDel(false);
-        if (ok) {
-            onDeleted(delAct);
-        }
-    };
-
-    const handleDialogTagClose = tag => {
-        setDialogTag(false);
-        if (tag) {
-            onTagged(tag);
-        }
-    };
-
-    const handleClickAction = action => {
-        switch (action) {
-            case 'tag': {
-                return () => {
-                    setDialogTag(true);
-                };
-            }
-
-            case 'remove': {
-                return () => {
-                    setDialogDel(true);
-                };
-            }
-
-            default:
-                return null;
-        }
-    };
-
     const createContainerParam = new URLSearchParams();
-    createContainerParam.set('image', img.nameOrId);
+    createContainerParam.set('image', image.nameOrId);
+
+    const canRemove = image.Containers === 0 || (image.RepoTags && image.RepoTags.length > 1);
 
     return (
         <>
-            <ImageActionRemove open={dialogDel} img={img} onClose={handleDialogDelClose} />
-            <ImageActionTag open={dialogTag} img={img} onClose={handleDialogTagClose} />
+            <ImageDialogRemove
+                open={dialogDel}
+                image={image}
+                onClose={() => setDialogDel(false)}
+            />
+            <ImageDialogTag
+                open={dialogTag}
+                image={image}
+                onClose={() => setDialogTag(false)}
+            />
 
             <Tooltip title="Create a container using this image">
                 <IconButton
@@ -69,21 +46,35 @@ export default function ImageActions({img, onDeleted, onTagged}) {
                 <IconButton
                     aria-label="add a tag"
                     sx={{color: green[500]}}
-                    onClick={handleClickAction('tag')}
+                    onClick={() => setDialogTag(true)}
                 >
                     <LocalOfferIcon />
                 </IconButton>
             </Tooltip>
 
-            <Tooltip title="Remove">
-                <IconButton
-                    aria-label="remove"
-                    sx={{color: orange[300]}}
-                    onClick={handleClickAction('remove')}
-                >
-                    <DeleteIcon />
-                </IconButton>
-            </Tooltip>
+            {canRemove ? (
+                <Tooltip title="Remove">
+                    <IconButton
+                        aria-label="remove"
+                        sx={{color: orange[300]}}
+                        onClick={() => setDialogDel(true)}
+                    >
+                        <DeleteIcon />
+                    </IconButton>
+                </Tooltip>
+            ): (
+                <Tooltip title="Remove">
+                    <span>
+                        <IconButton
+                            aria-label="remove"
+                            sx={{color: orange[300]}}
+                            disabled
+                        >
+                            <DeleteIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+            )}
         </>
     );
 }

@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useState} from "react";
 import {Tooltip} from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
@@ -14,7 +14,7 @@ export default function ImageList() {
     const [errMsg, setErrMsg] = useState('');
     const navigate = useNavigate();
     const [images, setImages] = useState([]);
-    const [pullDialogOpen, setPullDialogOpen] = useState(false);
+
 
     useEffect(() => {
         const onData = data => {
@@ -25,7 +25,7 @@ export default function ImageList() {
         const onError = error => {
             if (dataModel.errIsNoLogin(error)) {
                 let query = new URLSearchParams();
-                query.append('cb', '/images')
+                query.append('cb', '/images');
                 navigate('/login?' + query.toString());
                 return;
             }
@@ -41,36 +41,11 @@ export default function ImageList() {
         return () => cancel();
     }, [navigate]);
 
-    const handleClickPull = () => {
-        setPullDialogOpen(true);
-    }
-
-    const handlePullDialogClose = shouldRefresh => {
-        if (shouldRefresh) {
-            setLoading(true);
-        }
-        setPullDialogOpen(false)
-    }
-
-    const barButtons = useMemo(() => (
-        <>
-            <Tooltip title="Pull an image">
-                <IconButton
-                    aria-label="pull an container"
-                    color="inherit"
-                    onClick={handleClickPull}
-                >
-                    <CloudDownloadIcon />
-                </IconButton>
-            </Tooltip>
-        </>
-    ), []);
-
     useEffect(() => {
         const ctrl = getController('bar_button');
-        const unregister = ctrl.asControllerGuest(barButtons);
+        const unregister = ctrl.asControllerGuest(<ImageListBarButtons />);
         return () => unregister();
-    }, [barButtons]);
+    }, []);
 
     useEffect(() => {
         const ctrl = getController('bar_breadcrumb');
@@ -83,14 +58,30 @@ export default function ImageList() {
     }, []);
 
     return (
-        <>
-            <ImagesTable
-                loading={loading}
-                errMsg={errMsg}
-                imagesData={images}
-            />
+        <ImagesTable
+            loading={loading}
+            errMsg={errMsg}
+            imagesData={images}
+        />
+    );
+}
 
-            <ImagePull dialogOpen={pullDialogOpen} onClose={handlePullDialogClose} />
+export function ImageListBarButtons() {
+    const [pullDialogOpen, setPullDialogOpen] = useState(false);
+
+    return (
+        <>
+            <Tooltip title="Pull an image">
+                <IconButton
+                    aria-label="pull an container"
+                    color="inherit"
+                    onClick={() => setPullDialogOpen(true)}
+                >
+                    <CloudDownloadIcon />
+                </IconButton>
+            </Tooltip>
+
+            <ImagePull dialogOpen={pullDialogOpen} onClose={() => setPullDialogOpen(false)} />
         </>
     );
 }

@@ -1,12 +1,8 @@
-import {useNavigate, useParams} from "react-router-dom";
+import {useOutletContext} from "react-router-dom";
 import MyDataTable from "../../../components/MyDataTable";
-import {useCallback, useEffect, useState} from "react";
-import dataModel from "../../../lib/dataModel";
+import {useMemo} from "react";
 import {Alert, Box, Chip, Skeleton, Stack} from "@mui/material";
 import ContainerStatus from "../ContainerStatus";
-
-import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
-import IconButton from "@mui/material/IconButton";
 import timeUtil from "../../../lib/timeUtil";
 import sizeUtil from "../../../lib/sizeUtil";
 import CreatedAt from "../../../components/CreatedAt";
@@ -14,6 +10,7 @@ import CreatedAt from "../../../components/CreatedAt";
 const dataKeys = [
     {
         label: "Short ID",
+        loadingFunc: resp => resp.Id.substring(0, 12),
         dataFunc: resp => resp.Id.substring(0, 12)
     },
     {
@@ -139,13 +136,16 @@ const dataKeys = [
     }
 ];
 
-const loading = (<Skeleton animation="wave" variant="text" sx={{maxWidth: "480px"}}/>);
+const loadingEl = (<Skeleton animation="wave" variant="text" sx={{maxWidth: "480px"}}/>);
 
-const populateTableData = resp => {
+const populateTableData = (resp, loading) => {
     const d = [];
     dataKeys.forEach(row => {
-        let v = loading;
-        if (row.dataFunc) {
+        let v = loadingEl;
+        if (loading && row.loadingFunc) {
+            v = row.loadingFunc(resp);
+        }
+        if (!loading && row.dataFunc) {
             v = row.dataFunc(resp);
         }
         d.push({label: row.label, value: v, valueSx: row.valueSx});
@@ -154,42 +154,10 @@ const populateTableData = resp => {
 };
 
 export default function ContainerDetailOverview() {
-    const {containerId} = useParams();
-    const [errMsg, setErrMsg] = useState('');
-    const navigate = useNavigate();
-
-    const [tableData, setTableData] = useState(populateTableData({Id: containerId}));
-
-    const loadDataTable = useCallback(( ac) => {
-        setErrMsg('');
-
-        dataModel.containerInspect(containerId, true, ac)
-            .then(resp => {
-                setTableData(populateTableData(resp));
-            })
-            .catch(error => {
-                if (ac.signal.aborted) {
-                    return;
-                }
-                if (dataModel.errIsNoLogin(error)) {
-                    let query = new URLSearchParams();
-                    query.append('cb', '/containers/' + containerId + '/overview')
-                    navigate('/login?' + query.toString());
-                    return;
-                }
-                let e = error.toString();
-                if (error.response) {
-                    e = error.response.data;
-                }
-                setErrMsg(e)
-            });
-    }, [navigate, containerId]);
-
-    useEffect(() => {
-        const ac = new AbortController()
-        loadDataTable(ac);
-        return () => ac.abort();
-    }, [loadDataTable]);
+    const {container, loading, errMsg} = useOutletContext();
+    const tableData = useMemo(() => {
+        return populateTableData(container, loading)
+    }, [container, loading]);
 
     return (
         <>

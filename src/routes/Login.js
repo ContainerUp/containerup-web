@@ -42,8 +42,9 @@ export default function Login() {
             })
             .finally(() => {
                 setLoading(false);
-            })
-    }
+            });
+    };
+
     const handleCloseSnackbar = () => {
         setShowAlert(false);
     }

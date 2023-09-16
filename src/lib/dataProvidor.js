@@ -112,7 +112,7 @@ const aioMain = onAioClose => {
         Object.keys(reqQueue).forEach(index => {
             const req = reqQueue[index];
             subscribers[index] = {onData: req.onData, onError: req.onError};
-            req.fnSub(index, req.onData, req.onError, req.arg);
+            req.fnSub(index, req.arg);
             delete reqQueue[index];
         });
         ready = true;
@@ -155,7 +155,7 @@ const aioMain = onAioClose => {
         fnSub(index, arg);
 
         return () => commonUnsubscribe(index, fnUnsub);
-    }
+    };
 
     const commonUnsubscribe = (index, fnUnsub) => {
         if (!reqQueue[index] && !subscribers[index]) {
@@ -163,7 +163,7 @@ const aioMain = onAioClose => {
             return;
         }
 
-        if (ready) {
+        if (ready && !closed) {
             // new index, we don't need the resp actually
             const newIndex = nextIndex;
             nextIndex += 1;
@@ -172,7 +172,7 @@ const aioMain = onAioClose => {
         delete subscribers[index];
         delete reqQueue[index];
         disconnecter();
-    }
+    };
 
     let disconnectTimeout;
     const disconnecter = () => {
@@ -185,7 +185,7 @@ const aioMain = onAioClose => {
         } else {
             clearTimeout(disconnectTimeout);
         }
-    }
+    };
 
     const _subContainersList = index => {
         writer({index: parseInt(index), action: 'subscribeToContainersList'});

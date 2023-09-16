@@ -24,7 +24,7 @@ export default function ContainersList() {
         const onError = error => {
             if (dataModel.errIsNoLogin(error)) {
                 let query = new URLSearchParams();
-                query.append('cb', '/containers')
+                query.append('cb', '/containers');
                 navigate('/login?' + query.toString());
                 return;
             }
@@ -34,35 +34,23 @@ export default function ContainersList() {
             }
             setErrMsg(e);
             setLoading(false);
-        }
+        };
 
         const cancel = aioProvider().containersList(onData, onError);
         return () => cancel();
     }, [navigate]);
 
     const barButtons = useMemo(() => (
-        <>
-            <Tooltip title="Create a container">
-                <IconButton
-                    aria-label="create a container"
-                    color="inherit"
-                    to="/containers_create"
-                    component={RouterLink}
-                >
-                    <AddCircleOutlineIcon />
-                </IconButton>
-            </Tooltip>
-
-            {/*<Tooltip title="Refresh">*/}
-            {/*    <IconButton*/}
-            {/*        aria-label="refresh"*/}
-            {/*        color="inherit"*/}
-            {/*        onClick={handleRefresh}*/}
-            {/*    >*/}
-            {/*        <RefreshIcon />*/}
-            {/*    </IconButton>*/}
-            {/*</Tooltip>*/}
-        </>
+        <Tooltip title="Create a container">
+            <IconButton
+                aria-label="create a container"
+                color="inherit"
+                to="/containers_create"
+                component={RouterLink}
+            >
+                <AddCircleOutlineIcon />
+            </IconButton>
+        </Tooltip>
     ), []);
 
     useEffect(() => {

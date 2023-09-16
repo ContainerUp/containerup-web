@@ -39,7 +39,7 @@ export default function ContainerLogsTerminal({containerId, logOpts, wsTerminati
             handle.onClose(({code, reason}) => {
                 if (code === 4001) {
                     let query = new URLSearchParams();
-                    query.append('cb', '/containers/' + containerId + '/logs')
+                    query.append('cb', '/containers/' + containerId + '/logs');
                     navigate('/login?' + query.toString());
                     return;
                 }

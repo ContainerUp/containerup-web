@@ -18,7 +18,7 @@ import CheckIcon from "@mui/icons-material/Check";
 
 const checkNameAndGetImage = (containerName, imageId, abortController) => {
     const p1 = dataModel.containerInspect(containerName, false, abortController)
-        .then(d => {
+        .then(() => {
             throw new Error("There is already a container with the same name.");
         })
         .catch(err => {
@@ -38,7 +38,7 @@ const checkNameAndGetImage = (containerName, imageId, abortController) => {
         })
 
     return Promise.all([p1, p2])
-        .then(([v1, v2]) => {
+        .then(([, v2]) => {
             return v2;
         });
 };
@@ -226,7 +226,7 @@ export default function CreateNameImage({name, image, onConfirm, onEdited}) {
                 }
                 if (dataModel.errIsNoLogin(error)) {
                     let query = new URLSearchParams();
-                    query.append('cb', '/containers_create')
+                    query.append('cb', '/containers_create');
                     navigate('/login?' + query.toString());
                     return;
                 }
@@ -267,7 +267,7 @@ export default function CreateNameImage({name, image, onConfirm, onEdited}) {
 
                 if (dataModel.errIsNoLogin(error)) {
                     let query = new URLSearchParams();
-                    query.append('cb', '/containers_create')
+                    query.append('cb', '/containers_create');
                     navigate('/login?' + query.toString());
                     return;
                 }

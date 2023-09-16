@@ -1,11 +1,13 @@
 import {Box} from "@mui/material";
 import {getController} from "../lib/HostGuestController";
 import {useEffect, useState} from "react";
+import ContainerDetailButtons from "./Containers/ContainerDetailButtons";
 
 const emptyElement = <></>;
 
 export default function AppBarButtons() {
     const [children, setChildren] = useState(emptyElement);
+    const [isContainerDetailButtons, setIsContainerDetailButtons] = useState(false);
 
     useEffect(() => {
         const ctrl = getController('bar_button');
@@ -16,6 +18,12 @@ export default function AppBarButtons() {
             if (!c) {
                 c = emptyElement;
             }
+            if (c === 'container_detail_buttons') {
+                c = emptyElement;
+                setIsContainerDetailButtons(true);
+            } else {
+                setIsContainerDetailButtons(false);
+            }
             setChildren(c);
         });
 
@@ -25,6 +33,9 @@ export default function AppBarButtons() {
     return (
         <Box component="div">
             {children}
+            {isContainerDetailButtons && (
+                <ContainerDetailButtons />
+            )}
         </Box>
     );
 }

@@ -52,7 +52,7 @@ export default function ContainerExecTerminal({containerId, execOpts, stopPipeSi
             handle.onClose(({code, reason}) => {
                 if (code === 4001) {
                     let query = new URLSearchParams();
-                    query.append('cb', '/containers/' + containerId + '/exec')
+                    query.append('cb', '/containers/' + containerId + '/exec');
                     navigate('/login?' + query.toString());
                     return;
                 }

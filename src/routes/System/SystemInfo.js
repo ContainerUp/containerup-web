@@ -30,7 +30,7 @@ export default function SystemInfo() {
                 }
                 if (dataModel.errIsNoLogin(error)) {
                     let query = new URLSearchParams();
-                    query.append('cb', '/info')
+                    query.append('cb', '/info');
                     navigate('/login?' + query.toString());
                     return;
                 }

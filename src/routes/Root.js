@@ -13,6 +13,7 @@ import MyContent from "../components/MyContent";
 import {Box} from "@mui/material";
 import AppBarButtons from "./AppBarButtons";
 import AppBarBreadcrumb from "./AppBarBreadcrumb";
+import {SnackbarProvider} from "notistack";
 
 export default function Root() {
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -77,6 +78,7 @@ export default function Root() {
                 </MyDrawer>
 
                 <MyContent>
+                    <SnackbarProvider />
                     <Outlet />
                 </MyContent>
             </Box>

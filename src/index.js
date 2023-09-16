@@ -12,6 +12,8 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import 'xterm/css/xterm.css';
 import './index.css';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import {purple} from "@mui/material/colors";
 
 import Root from './routes/Root'
 import Login from './routes/Login'
@@ -28,6 +30,14 @@ import SystemInfo from "./routes/System/SystemInfo";
 import ImageDetail from "./routes/Images/Detail/ImageDetail";
 import ContainerCreate from "./routes/Containers/Create/ContainerCreate";
 import Logout from "./routes/Logout";
+
+const theme = createTheme({
+    palette: {
+        primary: {
+            main: purple[700],
+        },
+    },
+});
 
 const router = createBrowserRouter([{
     path: "/",
@@ -78,9 +88,12 @@ const router = createBrowserRouter([{
     element: <Logout />
 }]);
 
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
       <CssBaseline />
-      <RouterProvider router={router} />
+      <ThemeProvider theme={theme}>
+          <RouterProvider router={router} />
+      </ThemeProvider>
   </React.StrictMode>
 );

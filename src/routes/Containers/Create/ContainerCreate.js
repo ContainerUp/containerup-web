@@ -17,6 +17,7 @@ import CreateVolume from "./CreateVolume";
 import CreatePort from "./CreatePort";
 import dataModel from "../../../lib/dataModel";
 import {useNavigate} from "react-router-dom";
+import {enqueueSnackbar} from "notistack";
 
 export default function ContainerCreate() {
     const navigate = useNavigate();
@@ -184,6 +185,10 @@ export default function ContainerCreate() {
         }, ac)
             .then(data => {
                 navigate('/containers');
+                const msg = (<span>
+                    Container <b>{name}</b> ({data.Id.substring(0, 12)}) has been created.
+                </span>);
+                enqueueSnackbar(msg, {variant: 'success'});
             })
             .catch(error => {
                 if (ac.signal.aborted) {

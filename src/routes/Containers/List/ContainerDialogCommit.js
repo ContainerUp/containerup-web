@@ -1,30 +1,26 @@
 import {
-    Alert,
     Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogContentText,
-    DialogTitle,
-    Snackbar
+    DialogTitle
 } from "@mui/material";
 import {useEffect, useState} from "react";
 import TextField from "@mui/material/TextField";
 import dataModel from "../../../lib/dataModel";
 import {useNavigate} from "react-router-dom";
+import {enqueueSnackbar} from "notistack";
 
-export default function ActionCommitDialog({open, container, onClose}) {
+export default function ContainerDialogCommit({open, container, onClose}) {
     const navigate = useNavigate();
     const [actioning, setActioning] = useState(false);
     const [tag, setTag] = useState('');
     const [submitTimes, setSubmitTimes] = useState(0);
-    const [showAlert, setShowAlert] = useState(false);
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [actionErr, setActionErr] = useState('');
 
     const handleDialogClose = () => {
         onClose();
-    }
+    };
 
     const handleDialogForceClose = () => {
         if (actioning) {
@@ -40,14 +36,7 @@ export default function ActionCommitDialog({open, container, onClose}) {
         }
         setSubmitTimes(0);
         setActioning(true);
-    }
-
-    const handleAlertClose = () => {
-        setShowAlert(false);
-    }
-    const handleSuccessClose = () => {
-        setShowSuccess(false);
-    }
+    };
 
     useEffect(() => {
         if (!actioning) {
@@ -55,13 +44,18 @@ export default function ActionCommitDialog({open, container, onClose}) {
         }
 
         const ac = new AbortController();
-        dataModel.containerAction(container.idShort, {
+        dataModel.containerAction(container.Id.substring(0, 12), {
             action: 'commit',
             repoTag: tag
         }, ac)
             .then(() => {
                 onClose();
-                setShowSuccess(true);
+                const msg = (<span>
+                    Container <b>{container.Name || container.Names[0]}</b> ({container.Id.substring(0, 12)}) has been committed to an image with tag <b>{tag}</b>.
+                </span>);
+                enqueueSnackbar(msg, {
+                    variant: 'success'
+                });
             })
             .catch(err => {
                 if (ac.signal.aborted) {
@@ -69,16 +63,17 @@ export default function ActionCommitDialog({open, container, onClose}) {
                 }
                 if (dataModel.errIsNoLogin(err)) {
                     let query = new URLSearchParams();
-                    query.append('cb', '/containers')
+                    query.append('cb', '/containers');
                     navigate('/login?' + query.toString());
                     return;
                 }
-                setShowAlert(true);
                 let errStr = err.toString();
                 if (err.response) {
                     errStr = err.response.data;
                 }
-                setActionErr(errStr);
+                enqueueSnackbar(errStr, {
+                    variant: 'error'
+                });
             })
             .finally(() => {
                 if (ac.signal.aborted) {
@@ -104,7 +99,7 @@ export default function ActionCommitDialog({open, container, onClose}) {
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description-commit">
-                        Commit the container <b>{container.Names[0]}</b> ({container.idShort}) to an image.
+                        Commit the container <b>{container.Name || container.Names[0]}</b> ({container.Id.substring(0, 12)}) to an image.
                     </DialogContentText>
                     <TextField
                         autoFocus
@@ -133,16 +128,6 @@ export default function ActionCommitDialog({open, container, onClose}) {
                     </Button>
                 </DialogActions>
             </Dialog>
-
-            <Snackbar open={showAlert} autoHideDuration={5000} onClose={handleAlertClose}>
-                <Alert severity="error" onClose={handleAlertClose}>{actionErr}</Alert>
-            </Snackbar>
-
-            <Snackbar open={showSuccess} autoHideDuration={5000} onClose={handleAlertClose}>
-                <Alert severity="success" onClose={handleSuccessClose}>
-                    Container <b>{container.Names[0]}</b> ({container.idShort}) has been committed to an image with tag <b>{tag}</b>.
-                </Alert>
-            </Snackbar>
         </>
     );
 };

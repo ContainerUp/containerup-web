@@ -1,12 +1,6 @@
 import {
-    Alert,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
-    DialogTitle, Menu, MenuItem,
-    Snackbar,
+    Menu,
+    MenuItem,
     Tooltip
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
@@ -23,7 +17,9 @@ import {useEffect, useState} from "react";
 import dataModel from "../../../lib/dataModel";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import ActionCommitDialog from "./ActionCommitDialog";
+import ContainerDialogCommit from "./ContainerDialogCommit";
+import ContainerDialogRemove from "./ContainerDialogRemove";
+import {enqueueSnackbar} from "notistack";
 
 export default function ContainerActions({c}) {
     const navigate = useNavigate();
@@ -32,39 +28,11 @@ export default function ContainerActions({c}) {
     const menuOpen = Boolean(menuAnchorEl);
 
     const [dialogRemoveOpen, setDialogRemoveOpen] = useState(false);
+    const [dialogCommitOpen, setDialogCommitOpen] = useState(false);
+
     const [actionType, setActionType] = useState('');
     const [actionTarget, setActionTarget] = useState({Names: ['']});
     const [actioning, setActioning] = useState(false);
-
-    const [dialogCommitOpen, setDialogCommitOpen] = useState(false);
-
-    const [showAlert, setShowAlert] = useState(false);
-    const [actionErr, setActionErr] = useState('');
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [success, setSuccess] = useState({name: '', action: ''});
-
-    const handleClickMenuButton = event => {
-        setMenuAnchorEl(event.currentTarget);
-    };
-    const handleCloseMenu = () => {
-        setMenuAnchorEl(null);
-    }
-
-    const handleRemoveDialogClose = () => {
-        setDialogRemoveOpen(false);
-    };
-
-    const handleRemoveDialogConfirm = () => {
-        setActioning(true);
-    }
-
-    const handleAlertClose = () => {
-        setShowAlert(false);
-    };
-
-    const handleSuccessClose = () => {
-        setShowSuccess(false);
-    };
 
     const handleClickAction = (c, action) => {
         switch (action) {
@@ -116,7 +84,6 @@ export default function ContainerActions({c}) {
         }, ac)
             .then(() => {
                 setDialogRemoveOpen(false);
-                setShowSuccess(true);
 
                 let actionTypeText = '';
                 switch (actionType) {
@@ -134,9 +101,11 @@ export default function ContainerActions({c}) {
                     }
                     default:
                 }
-                setSuccess({
-                    name: actionTarget.Names[0],
-                    action: actionTypeText
+                const msg = (<span>
+                    Container <b>{actionTarget.Names[0]}</b> ({actionTarget.idShort}) {actionTypeText}.
+                </span>);
+                enqueueSnackbar(msg, {
+                    variant: 'success'
                 });
             })
             .catch(err => {
@@ -145,16 +114,17 @@ export default function ContainerActions({c}) {
                 }
                 if (dataModel.errIsNoLogin(err)) {
                     let query = new URLSearchParams();
-                    query.append('cb', '/containers')
+                    query.append('cb', '/containers');
                     navigate('/login?' + query.toString());
                     return;
                 }
-                setShowAlert(true);
                 let errStr = err.toString();
                 if (err.response) {
                     errStr = err.response.data;
                 }
-                setActionErr(errStr);
+                enqueueSnackbar(errStr, {
+                    variant: 'error'
+                });
             })
             .finally(() => {
                 if (ac.signal.aborted) {
@@ -173,46 +143,19 @@ export default function ContainerActions({c}) {
 
     return (
         <>
-            <Dialog
+            <ContainerDialogRemove
+                container={c}
+                actioning={dialogRemoveOpen && actioning}
                 open={dialogRemoveOpen}
-                onClose={handleRemoveDialogClose}
-                aria-labelledby="alert-dialog-title-rm"
-                aria-describedby="alert-dialog-description-rm"
-            >
-                <DialogTitle id="alert-dialog-title-rm">
-                    Remove container
-                </DialogTitle>
-                <DialogContent>
-                    <DialogContentText id="alert-dialog-description-rm">
-                        Do you really want to remove <b>{actionTarget.Names[0]}</b> ({actionTarget.idShort})? <br />
-                        This container will be removed permanently. You cannot undo this action.
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleRemoveDialogClose} autoFocus disabled={actioning}>
-                        Cancel
-                    </Button>
-                    <Button onClick={handleRemoveDialogConfirm} disabled={actioning} color="warning">
-                        Remove
-                    </Button>
-                </DialogActions>
-            </Dialog>
+                onClose={() => setDialogRemoveOpen(false)}
+                onConfirm={() => setActioning(true)}
+            />
 
-            <ActionCommitDialog
+            <ContainerDialogCommit
                 open={dialogCommitOpen}
                 container={c}
                 onClose={() => setDialogCommitOpen(false)}
             />
-
-            <Snackbar open={showAlert} autoHideDuration={5000} onClose={handleAlertClose}>
-                <Alert severity="error" onClose={handleAlertClose}>{actionErr}</Alert>
-            </Snackbar>
-
-            <Snackbar open={showSuccess} autoHideDuration={5000} onClose={handleSuccessClose}>
-                <Alert severity="success" onClose={handleSuccessClose}>
-                    Container <b>{success.name}</b> {success.action}.
-                </Alert>
-            </Snackbar>
 
             {canStart ? (
                 <Tooltip title="Start">
@@ -300,17 +243,16 @@ export default function ContainerActions({c}) {
             <Tooltip title="More actions">
                 <IconButton
                     aria-label="more actions"
-                    onClick={handleClickMenuButton}
+                    onClick={event => setMenuAnchorEl(event.currentTarget)}
                     color="primary"
                 >
                     <MoreVertIcon />
                 </IconButton>
             </Tooltip>
             <Menu
-                id="basic-menu"
                 anchorEl={menuAnchorEl}
                 open={menuOpen}
-                onClose={handleCloseMenu}
+                onClose={() => setMenuAnchorEl(null)}
                 MenuListProps={{
                     'aria-labelledby': 'basic-button',
                 }}
