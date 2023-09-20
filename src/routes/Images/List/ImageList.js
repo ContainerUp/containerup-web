@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {Tooltip} from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
@@ -6,8 +6,10 @@ import {useNavigate} from "react-router-dom";
 import {getController} from "../../../lib/HostGuestController";
 import ImagesTable from "./ImagesTable";
 import dataModel from "../../../lib/dataModel";
-import ImagePull from "./ImagePull";
-import {aioProvider} from "../../../lib/dataProvidor";
+import ImagePullDialog from "./ImagePullDialog";
+import {aioProvider, isDisconnectError} from "../../../lib/dataProvidor";
+import {showWebsocketDisconnectError} from "../../../components/WebsocketDisconnectError";
+import ContainerUpLearnMore from "../../../components/ContainerUpLearnMore";
 
 export default function ImageList() {
     const [loading, setLoading] = useState(true)
@@ -33,13 +35,21 @@ export default function ImageList() {
             if (error.response) {
                 e = error.response.data;
             }
-            setErrMsg(e);
-            setLoading(false);
+            if (loading) {
+                setErrMsg(e);
+                setLoading(false);
+            } else {
+                if (isDisconnectError(error)) {
+                    showWebsocketDisconnectError();
+                } else {
+                    setErrMsg(e);
+                }
+            }
         };
 
         const cancel = aioProvider().imagesList(onData, onError);
         return () => cancel();
-    }, [navigate]);
+    }, [loading, navigate]);
 
     useEffect(() => {
         const ctrl = getController('bar_button');
@@ -58,16 +68,24 @@ export default function ImageList() {
     }, []);
 
     return (
-        <ImagesTable
-            loading={loading}
-            errMsg={errMsg}
-            imagesData={images}
-        />
+        <>
+            <ImagesTable
+                loading={loading}
+                errMsg={errMsg}
+                imagesData={images}
+            />
+
+            <ContainerUpLearnMore variant="long" />
+        </>
     );
 }
 
 export function ImageListBarButtons() {
     const [pullDialogOpen, setPullDialogOpen] = useState(false);
+
+    const handleCloseDialog = useCallback(() => {
+        setPullDialogOpen(false);
+    }, []);
 
     return (
         <>
@@ -81,7 +99,7 @@ export function ImageListBarButtons() {
                 </IconButton>
             </Tooltip>
 
-            <ImagePull dialogOpen={pullDialogOpen} onClose={() => setPullDialogOpen(false)} />
+            <ImagePullDialog open={pullDialogOpen} onClose={handleCloseDialog} />
         </>
     );
 }

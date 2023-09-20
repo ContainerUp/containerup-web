@@ -15,6 +15,7 @@ import ImagePullTerminal from "../../Images/List/ImagePullTerminal";
 import CreateImagePullActions from "./CreateImagePullActions";
 import Pipe from "../../../lib/Pipe";
 import CheckIcon from "@mui/icons-material/Check";
+import {demoImage} from "../../Images/List/ImagePullDialog";
 
 const checkNameAndGetImage = (containerName, imageId, abortController) => {
     const p1 = dataModel.containerInspect(containerName, false, abortController)
@@ -103,10 +104,22 @@ export default function CreateNameImage({name, image, onConfirm, onEdited}) {
     const pullTerminationOnReceive = pullTerminationPipe.useOnReceive();
     const pullTerminationWriter = pullTerminationPipe.useWriter();
 
-    const imgPulled = imageName && imageOpt && (
-        (imageOpt.Names && imageOpt.Names[0] && imageName === imageOpt.Names[0]) ||
-        (imageOpt.Id && imageName === imageOpt.Id.substring(0, 12))
-    );
+    let imgPulled = false;
+    if (imageName && imageOpt) {
+        if (imageOpt.Names) {
+            for (const name of imageOpt.Names) {
+                if (name === imageName) {
+                    imgPulled = true;
+                    break;
+                }
+            }
+        }
+        if (!imgPulled) {
+            if (imageOpt.Id && (imageName === imageOpt.Id.substring(0, 12) || imageOpt.Id === imageName)) {
+                imgPulled = true;
+            }
+        }
+    }
 
     const [loadingImageDetail, setLoadingImageDetail] = useState(false);
 
@@ -384,6 +397,10 @@ export default function CreateNameImage({name, image, onConfirm, onEdited}) {
                             <>
                                 The image <b>{imageName}</b> is not found locally. <br />
                                 To continue, pull this image first. Pull the image now?
+
+                                <Alert severity="info">
+                                    As a limit of the demo server, please try this one: <b>{demoImage}</b>
+                                </Alert>
                             </>
                         )}
                     </DialogContentText>

@@ -4,13 +4,17 @@ import ListItemText from "@mui/material/ListItemText";
 import ListItem from "@mui/material/ListItem";
 import {useLocation, useNavigate} from "react-router-dom";
 
-export default function MyDrawerItem({drawerOpen, text, icon, path, or}) {
+export default function MyDrawerItem({drawerOpen, text, icon, path, or, href}) {
     const navigate = useNavigate();
     const {pathname} = useLocation();
 
     const handleClick = () => {
-        navigate(path)
-    }
+        if (href) {
+            window.open(href, '_blank').focus();
+            return;
+        }
+        navigate(path);
+    };
 
     let selected = false;
     if (pathname.indexOf(path) === 0

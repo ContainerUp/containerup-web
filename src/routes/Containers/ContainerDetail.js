@@ -2,8 +2,9 @@ import {Box, Tab, Tabs} from "@mui/material";
 import {Link, Outlet, useLocation, useNavigate, useParams} from "react-router-dom";
 import {useEffect, useMemo, useState} from "react";
 import {getController} from "../../lib/HostGuestController";
-import {aioProvider} from "../../lib/dataProvidor";
+import {aioProvider, isDisconnectError} from "../../lib/dataProvidor";
 import dataModel from "../../lib/dataModel";
+import {showWebsocketDisconnectError} from "../../components/WebsocketDisconnectError";
 
 const tabs = [{
     to: "overview",
@@ -112,13 +113,21 @@ export default function ContainerDetail() {
             if (error.response) {
                 e = error.response.data;
             }
-            setErrMsg(e);
-            setLoading(false);
+            if (loading) {
+                setErrMsg(e);
+                setLoading(false);
+            } else {
+                if (isDisconnectError(error)) {
+                    showWebsocketDisconnectError();
+                } else {
+                    setErrMsg(e);
+                }
+            }
         };
 
         const cancel = aioProvider().container(containerId, onData, onError)
         return () => cancel();
-    }, [containerId, navigate, pathname]);
+    }, [containerId, loading, navigate, pathname]);
 
     return (
         <>

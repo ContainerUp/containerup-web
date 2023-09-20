@@ -7,10 +7,23 @@ import {useState} from "react";
 import dataModel from '../lib/dataModel';
 import {Container, Snackbar, Alert} from "@mui/material";
 import {useNavigate, useSearchParams} from "react-router-dom";
+import {AlertTitle} from "@mui/lab";
+import {grey} from "@mui/material/colors";
+import ContainerUpLearnMore from "../components/ContainerUpLearnMore";
+import {useGA4} from "../lib/ga4";
+
+let defaultUsername = '';
+let defaultPassword = '';
+if (process.env.REACT_APP_CONTAINERUP_DEMO) {
+    defaultUsername = 'demo';
+    defaultPassword = 'demo';
+}
 
 export default function Login() {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    useGA4();
+
+    const [username, setUsername] = useState(defaultUsername);
+    const [password, setPassword] = useState(defaultPassword);
     const [loading, setLoading] = useState(false);
     const [showAlert, setShowAlert] = useState(false);
     const [errMsg, setErrMsg] = useState('')
@@ -97,6 +110,21 @@ export default function Login() {
                         <span>Submit</span>
                     </LoadingButton>
                 </form>
+
+                {process.env.REACT_APP_CONTAINERUP_DEMO && (
+                    <>
+                        <Alert severity="info" sx={{mt: '15px'}}>
+                            <AlertTitle>Demo server</AlertTitle>
+                            Feel free to explore all the features!
+                        </Alert>
+
+                        <ContainerUpLearnMore />
+                    </>
+                )}
+
+                <Typography sx={{mt: '15px', color: grey[400]}} variant="caption">
+                    Build {process.env.REACT_APP_CONTAINERUP_BUILD} Commit {process.env.REACT_APP_CONTAINERUP_COMMIT}
+                </Typography>
             </Container>
 
         </>

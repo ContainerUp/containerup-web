@@ -172,7 +172,7 @@ export default function ContainerCreate() {
                 return {
                     container: v.container,
                     host: v.host,
-                    rw: v.rw
+                    readWrite: v.rw
                 };
             }),
             ports: ports.map(p => {
@@ -195,7 +195,6 @@ export default function ContainerCreate() {
                     return;
                 }
 
-                console.log(error)
                 let errStr = error.toString();
                 if (dataModel.errIsNoLogin(error)) {
                     errStr = 'Session expired. Reload the page, and try again.';

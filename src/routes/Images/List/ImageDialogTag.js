@@ -7,21 +7,21 @@ import {
     DialogTitle
 } from "@mui/material";
 import TextField from "@mui/material/TextField";
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import dataModel from "../../../lib/dataModel";
 import {useNavigate} from "react-router-dom";
 import {enqueueSnackbar} from "notistack";
 
-export default function ImageDialogTag({open, image, onClose}) {
+export default function ImageDialogTag({open, imageIdShort, onClose}) {
     const navigate = useNavigate();
     const [tag, setTag] = useState('');
     const [submitTimes, setSubmitTimes] = useState(0);
     const [actioning, setActioning] = useState(false);
 
-    const handleDialogClose = () => {
+    const handleDialogClose = useCallback(() => {
         onClose();
         setTag('');
-    }
+    }, [onClose]);
 
     const handleDialogForceClose = () => {
         if (actioning) {
@@ -45,17 +45,16 @@ export default function ImageDialogTag({open, image, onClose}) {
         }
 
         const ac = new AbortController();
-        dataModel.imageAction(image.idShort, {
+        dataModel.imageAction(imageIdShort, {
             action: 'tag',
             repoTag: tag
         }, ac)
             .then(() => {
-                onClose();
+                handleDialogClose();
                 const msg = (<span>
-                    Tag <b>{tag}</b> added to <b>{image.idShort}</b>.
+                    Tag <b>{tag}</b> added to <b>{imageIdShort}</b>.
                 </span>);
                 enqueueSnackbar(msg, {variant: 'success'});
-                setTag('');
             })
             .catch(err => {
                 if (ac.signal.aborted) {
@@ -81,7 +80,7 @@ export default function ImageDialogTag({open, image, onClose}) {
             });
 
         return () => ac.abort();
-    }, [actioning, image, navigate, onClose, tag]);
+    }, [actioning, handleDialogClose, imageIdShort, navigate, tag]);
 
     return (
         <Dialog
@@ -97,7 +96,7 @@ export default function ImageDialogTag({open, image, onClose}) {
             </DialogTitle>
             <DialogContent>
                 <DialogContentText id="alert-dialog-description-tag">
-                    Add a tag to the image <b>{image.idShort}</b>
+                    Add a tag to the image <b>{imageIdShort}</b>
                 </DialogContentText>
                 <TextField
                     autoFocus

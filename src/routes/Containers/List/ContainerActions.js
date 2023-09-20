@@ -13,7 +13,7 @@ import TerminalIcon from "@mui/icons-material/Terminal";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SaveIcon from '@mui/icons-material/Save';
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import dataModel from "../../../lib/dataModel";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
@@ -141,10 +141,15 @@ export default function ContainerActions({c}) {
     const canExec = !actioning && (c.State === 'running');
     const canDelete = !actioning && (c.State === 'exited' || c.State === 'created');
 
+    const handleDialogCommitClose = useCallback(() => {
+        setDialogCommitOpen(false)
+    }, []);
+
     return (
         <>
             <ContainerDialogRemove
-                container={c}
+                containerName={c.Names[0]}
+                containerIdShort={c.idShort}
                 actioning={dialogRemoveOpen && actioning}
                 open={dialogRemoveOpen}
                 onClose={() => setDialogRemoveOpen(false)}
@@ -153,8 +158,9 @@ export default function ContainerActions({c}) {
 
             <ContainerDialogCommit
                 open={dialogCommitOpen}
-                container={c}
-                onClose={() => setDialogCommitOpen(false)}
+                containerName={c.Names[0]}
+                containerIdShort={c.idShort}
+                onClose={handleDialogCommitClose}
             />
 
             {canStart ? (

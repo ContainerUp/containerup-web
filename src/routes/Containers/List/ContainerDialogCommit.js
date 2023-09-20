@@ -6,21 +6,22 @@ import {
     DialogContentText,
     DialogTitle
 } from "@mui/material";
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import TextField from "@mui/material/TextField";
 import dataModel from "../../../lib/dataModel";
 import {useNavigate} from "react-router-dom";
 import {enqueueSnackbar} from "notistack";
 
-export default function ContainerDialogCommit({open, container, onClose}) {
+export default function ContainerDialogCommit({open, containerName, containerIdShort, onClose}) {
     const navigate = useNavigate();
     const [actioning, setActioning] = useState(false);
     const [tag, setTag] = useState('');
     const [submitTimes, setSubmitTimes] = useState(0);
 
-    const handleDialogClose = () => {
+    const handleDialogClose = useCallback(() => {
+        setTag('');
         onClose();
-    };
+    }, [onClose]);
 
     const handleDialogForceClose = () => {
         if (actioning) {
@@ -44,14 +45,14 @@ export default function ContainerDialogCommit({open, container, onClose}) {
         }
 
         const ac = new AbortController();
-        dataModel.containerAction(container.Id.substring(0, 12), {
+        dataModel.containerAction(containerIdShort, {
             action: 'commit',
             repoTag: tag
         }, ac)
             .then(() => {
-                onClose();
+                handleDialogClose();
                 const msg = (<span>
-                    Container <b>{container.Name || container.Names[0]}</b> ({container.Id.substring(0, 12)}) has been committed to an image with tag <b>{tag}</b>.
+                    Container <b>{containerName}</b> ({containerIdShort}) has been committed to image <b>{tag}</b>.
                 </span>);
                 enqueueSnackbar(msg, {
                     variant: 'success'
@@ -83,7 +84,7 @@ export default function ContainerDialogCommit({open, container, onClose}) {
             });
 
         return () => ac.abort();
-    }, [actioning, container, navigate, onClose, tag]);
+    }, [actioning, containerName, containerIdShort, handleDialogClose, navigate, tag]);
 
     return (
         <>
@@ -99,7 +100,7 @@ export default function ContainerDialogCommit({open, container, onClose}) {
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description-commit">
-                        Commit the container <b>{container.Name || container.Names[0]}</b> ({container.Id.substring(0, 12)}) to an image.
+                        Commit the container <b>{containerName}</b> ({containerIdShort}) to an image.
                     </DialogContentText>
                     <TextField
                         autoFocus

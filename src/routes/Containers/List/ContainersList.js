@@ -7,7 +7,9 @@ import {Tooltip} from "@mui/material";
 import {getController} from "../../../lib/HostGuestController";
 import IconButton from "@mui/material/IconButton";
 import {Link as RouterLink} from 'react-router-dom';
-import {aioProvider} from "../../../lib/dataProvidor";
+import {aioProvider, isDisconnectError} from "../../../lib/dataProvidor";
+import {showWebsocketDisconnectError} from "../../../components/WebsocketDisconnectError";
+import ContainerUpLearnMore from "../../../components/ContainerUpLearnMore";
 
 export default function ContainersList() {
     const [loading, setLoading] = useState(true)
@@ -32,13 +34,21 @@ export default function ContainersList() {
             if (error.response) {
                 e = error.response.data;
             }
-            setErrMsg(e);
-            setLoading(false);
+            if (loading) {
+                setErrMsg(e);
+                setLoading(false);
+            } else {
+                if (isDisconnectError(error)) {
+                    showWebsocketDisconnectError();
+                } else {
+                    setErrMsg(e);
+                }
+            }
         };
 
         const cancel = aioProvider().containersList(onData, onError);
         return () => cancel();
-    }, [navigate]);
+    }, [loading, navigate]);
 
     const barButtons = useMemo(() => (
         <Tooltip title="Create a container">
@@ -70,10 +80,15 @@ export default function ContainersList() {
     }, []);
 
     return (
-        <ContainersTable
-            loading={loading}
-            errMsg={errMsg}
-            containersData={containers}
-        />
+        <>
+            <ContainersTable
+                loading={loading}
+                errMsg={errMsg}
+                containersData={containers}
+            />
+
+            <ContainerUpLearnMore variant="long" />
+        </>
+
     );
 }

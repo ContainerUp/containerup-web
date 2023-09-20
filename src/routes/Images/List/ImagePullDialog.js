@@ -1,11 +1,13 @@
-import {Box, Dialog, DialogContent, DialogContentText, DialogTitle} from "@mui/material";
+import {Alert, Box, Dialog, DialogContent, DialogContentText, DialogTitle} from "@mui/material";
 import TextField from "@mui/material/TextField";
 import {useRef, useState} from "react";
 import ImagePullTerminal from "./ImagePullTerminal";
 import ImagePullActions from "./ImagePullActions";
 import Pipe from "../../../lib/Pipe";
 
-export default function ImagePull({dialogOpen, onClose}) {
+export const demoImage = 'docker.io/library/ubuntu:latest';
+
+export default function ImagePullDialog({open, onClose}) {
     const [imageName, setImageName] = useState('');
     const [pulling, setPulling] = useState(false);
     const done = useRef(false);
@@ -38,10 +40,14 @@ export default function ImagePull({dialogOpen, onClose}) {
         pullTerminationWriter();
     };
 
+    const handleClickDemoImage = () => {
+        setImageName(demoImage);
+    };
+
     return (
         <>
             <Dialog
-                open={dialogOpen}
+                open={open}
                 onClose={handleDialogForceClose}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description"
@@ -75,6 +81,12 @@ export default function ImagePull({dialogOpen, onClose}) {
                                     }
                                 }}
                             />
+
+                            {process.env.REACT_APP_CONTAINERUP_DEMO && (
+                                <Alert severity="info">
+                                    As a limit of the demo server, please try this one: <b onClick={handleClickDemoImage}>{demoImage}</b>
+                                </Alert>
+                            )}
                         </>
                     ) : (
                         <>

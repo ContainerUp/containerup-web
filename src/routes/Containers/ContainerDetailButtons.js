@@ -6,7 +6,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import ListItemText from "@mui/material/ListItemText";
 import {green, orange, red, yellow} from "@mui/material/colors";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import StopIcon from "@mui/icons-material/Stop";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import {getController} from "../../lib/HostGuestController";
@@ -192,6 +192,10 @@ export default function ContainerDetailButtons() {
         return () => ac.abort();
     }, [actioning, container, navigate, pathname, action]);
 
+    const handleDialogCommitClose = useCallback(() => {
+        setDialogCommitOpen(false)
+    }, []);
+
     const st = getStatusText(container);
 
     if (!container) {
@@ -205,7 +209,8 @@ export default function ContainerDetailButtons() {
             {container && (
                 <>
                     <ContainerDialogRemove
-                        container={container}
+                        containerName={container.Name}
+                        containerIdShort={container.Id.substring(0, 12)}
                         actioning={dialogRemoveOpen && actioning}
                         open={dialogRemoveOpen}
                         onClose={() => setDialogRemoveOpen(false)}
@@ -214,8 +219,9 @@ export default function ContainerDetailButtons() {
 
                     <ContainerDialogCommit
                         open={dialogCommitOpen}
-                        container={container}
-                        onClose={() => setDialogCommitOpen(false)}
+                        containerName={container.Name}
+                        containerIdShort={container.Id.substring(0, 12)}
+                        onClose={handleDialogCommitClose}
                     />
                 </>
             )}

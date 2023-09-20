@@ -1,6 +1,6 @@
 import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material";
 
-export default function ContainerDialogRemove({container, actioning, open, onClose, onConfirm}) {
+export default function ContainerDialogRemove({containerName, containerIdShort, actioning, open, onClose, onConfirm}) {
     return (
         <Dialog
             open={open}
@@ -13,7 +13,7 @@ export default function ContainerDialogRemove({container, actioning, open, onClo
             </DialogTitle>
             <DialogContent>
                 <DialogContentText id="alert-dialog-description-rm">
-                    Do you really want to remove <b>{container.Name || container.Names[0]}</b> ({container.Id.substring(0, 12)})? <br />
+                    Do you really want to remove <b>{containerName}</b> ({containerIdShort})? <br />
                     This container will be removed permanently. You cannot undo this action.
                 </DialogContentText>
             </DialogContent>

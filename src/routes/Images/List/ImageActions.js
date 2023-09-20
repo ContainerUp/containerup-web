@@ -3,7 +3,7 @@ import IconButton from "@mui/material/IconButton";
 import {green, orange} from "@mui/material/colors";
 import {Link as RouterLink} from "react-router-dom";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {useState} from "react";
+import {useCallback, useState} from "react";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import ImageDialogRemove from "./ImageDialogRemove";
@@ -18,6 +18,10 @@ export default function ImageActions({image}) {
 
     const canRemove = image.Containers === 0 || (image.RepoTags && image.RepoTags.length > 1);
 
+    const handleDialogClose = useCallback(() => {
+        setDialogTag(false);
+    }, []);
+
     return (
         <>
             <ImageDialogRemove
@@ -27,8 +31,8 @@ export default function ImageActions({image}) {
             />
             <ImageDialogTag
                 open={dialogTag}
-                image={image}
-                onClose={() => setDialogTag(false)}
+                imageIdShort={image.idShort}
+                onClose={handleDialogClose}
             />
 
             <Tooltip title="Create a container using this image">

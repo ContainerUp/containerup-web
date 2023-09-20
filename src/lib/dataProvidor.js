@@ -43,7 +43,7 @@ const makeAioConnection = (onData, onOpen, onError, onClose) => {
         ws.close();
         state = 99;
 
-        onError(new Error('Websocket error'));
+        onError(new WebsocketError('Cannot connect to websocket', websocketErrorTypeConnect));
     });
     ws.addEventListener('close', event => {
         if (state === 99) {
@@ -57,7 +57,7 @@ const makeAioConnection = (onData, onOpen, onError, onClose) => {
         if (code === 4001) {
             err = dataModel.errors.errNoLogin;
         } else {
-            err = new Error(`Websocket closed ${code} ${reason}`);
+            err = new WebsocketError(`Websocket closed ${code} ${reason}`, websocketErrorTypeDisconnect);
         }
         onClose(err);
     });
@@ -147,7 +147,7 @@ const aioMain = onAioClose => {
             return () => commonUnsubscribe(index, fnUnsub);
         }
         if (closed) {
-            onError(new Error('connection closed'));
+            onError(new WebsocketError('connection closed', websocketErrorTypeDisconnect));
             return () => {};
         }
 
@@ -229,4 +229,29 @@ export function aioProvider() {
         aio = null;
     });
     return aio;
+}
+
+class WebsocketError extends Error {
+    constructor(message, type) {
+        super(message);
+        this.name = this.constructor.name;
+        this.errType = type;
+    }
+}
+
+const websocketErrorTypeDisconnect = 'disconnect';
+const websocketErrorTypeConnect = 'connect';
+
+export function isDisconnectError(err) {
+    if (!(err instanceof WebsocketError)) {
+        return false;
+    }
+    return err.errType === websocketErrorTypeDisconnect;
+}
+
+export function isConnectError(err) {
+    if (!(err instanceof WebsocketError)) {
+        return false;
+    }
+    return err.errType === websocketErrorTypeConnect;
 }

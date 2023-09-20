@@ -14,8 +14,10 @@ import {Box} from "@mui/material";
 import AppBarButtons from "./AppBarButtons";
 import AppBarBreadcrumb from "./AppBarBreadcrumb";
 import {SnackbarProvider} from "notistack";
+import {useGA4} from "../lib/ga4";
 
 export default function Root() {
+    useGA4();
     const [drawerOpen, setDrawerOpen] = useState(false);
 
     const handleDrawerOpen = () => {
@@ -69,7 +71,7 @@ export default function Root() {
                             path='/info'
                         />
                         <MyDrawerItem
-                            text={"Logout"}
+                            text="Logout"
                             drawerOpen={drawerOpen}
                             icon={<LogoutIcon />}
                             path='/logout'

@@ -1,21 +1,24 @@
-import MyTerminal from "../../../components/MyTerminal";
 import {useCallback, useEffect} from "react";
-import Pipe from "../../../lib/Pipe";
 import dataModel from "../../../lib/dataModel";
 import {useNavigate} from "react-router-dom";
 import {Box} from "@mui/material";
 
 import term from "../../../lib/termUtil";
+import TwoWayPipe from "../../../lib/TwoWayPipe";
+import MyTerminalTwoWay from "../../../components/MyTerminalTwoWay";
 
 export default function ContainerLogsTerminal({containerId, logOpts, wsTerminationWriter, stopActionOnReceive}) {
     const navigate = useNavigate();
 
-    const pipe = new Pipe();
-    const writer = pipe.useWriter();
-    const writerOnReceive = pipe.useOnReceive();
+    const dataPipe = new TwoWayPipe();
+    const leftSide = dataPipe.useLeft();
+    const leftWriter = leftSide.useWriter();
 
     const connectLogs = useCallback((containerId, logOpts, writer) => {
-        writer(term.reset + term.yellow('Connecting...'));
+        writer({
+            type: 'data',
+            data: term.reset + term.yellow('Connecting...')
+        });
 
         const [promise, cancelFunc] = dataModel.containerLogs(containerId, logOpts);
 
@@ -28,12 +31,18 @@ export default function ContainerLogsTerminal({containerId, logOpts, wsTerminati
 
         promise.then(handle => {
             // console.log("Log open...")
-            writer(term.reset);
+            writer({
+                type: 'data',
+                data: term.reset
+            });
 
             handle.onReceive(d => {
                 // 0 (std out) + data...
                 // 1 (std err) + data...
-                writer(d.substring(1).replaceAll('\n', '\r\n'));
+                writer({
+                    type: 'data',
+                    data: d.substring(1).replaceAll('\n', '\r\n')
+                });
             });
 
             handle.onClose(({code, reason}) => {
@@ -46,13 +55,19 @@ export default function ContainerLogsTerminal({containerId, logOpts, wsTerminati
 
                 const now = new Date().toLocaleString();
                 if (!terminated) {
-                    writer(term.crlf + term.red(`Session ended at ${now}.`));
+                    writer({
+                        type: 'data',
+                        data: term.crlf + term.red(`Session ended at ${now}.`)
+                    });
                     if (code !== 1000) {
                         let reasonStr = '';
                         if (reason) {
                             reasonStr = `: ${reason}`;
                         }
-                        writer(term.red(` (Abnormally${reasonStr})`));
+                        writer({
+                            type: 'data',
+                            data: term.red(` (Abnormally${reasonStr})`)
+                        });
                     }
                 }
 
@@ -68,7 +83,10 @@ export default function ContainerLogsTerminal({containerId, logOpts, wsTerminati
                 return;
             }
             const e = error.toString();
-            writer(term.reset + term.red(`Cannot load logs: ${e}.`));
+            writer({
+                type: 'data',
+                data: term.reset + term.red(`Cannot load logs: ${e}.`)
+            });
             if (wsTerminationWriter) {
                 wsTerminationWriter();
             }
@@ -80,7 +98,10 @@ export default function ContainerLogsTerminal({containerId, logOpts, wsTerminati
                 terminated = true;
                 terminalCloser();
                 const now = new Date().toLocaleString();
-                writer(term.crlf + term.red(`Session ended by user at ${now}.`));
+                writer({
+                    type: 'data',
+                    data: term.crlf + term.red(`Session ended by user at ${now}.`)
+                });
             });
         }
 
@@ -90,13 +111,13 @@ export default function ContainerLogsTerminal({containerId, logOpts, wsTerminati
 
 
     useEffect(() => {
-        const closer = connectLogs(containerId, logOpts, writer);
+        const closer = connectLogs(containerId, logOpts, leftWriter);
         return () => closer();
-    }, [connectLogs, logOpts, containerId, writer]);
+    }, [connectLogs, logOpts, containerId, leftWriter]);
 
     return (
         <Box sx={{height: 'calc(100vh - 214px)'}}>
-            <MyTerminal writerOnReceive={writerOnReceive} />
+            <MyTerminalTwoWay dataSide={dataPipe.useRight()} />
         </Box>
     );
 }

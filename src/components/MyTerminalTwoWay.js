@@ -39,7 +39,6 @@ export default function MyTerminalTwoWay({dataSide}) {
                 default:
                     console.log('unknown dataSide command', data);
             }
-            xterm.write(data)
         });
         xterm.onData(str => dsWriter({type: 'data', data: str}));
         xterm.onResize(({cols, rows}) => reportSize({cols, rows}));
