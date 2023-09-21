@@ -21,4 +21,4 @@ jobs:
         run: |
           export REACT_APP_CONTAINERUP_BUILD=$(date -u +%Y%m%d%H%M%S)
           export REACT_APP_CONTAINERUP_COMMIT=${GITHUB_SHA::7}
-          npm build
+          npm run build
