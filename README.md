@@ -10,16 +10,29 @@ It works alongside the [API backend](https://github.com/ContainerUp/containerup)
 npm install
 
 # Run the app in the development mode
-npm start
+npm run start
 
 ```
 
 ## Configuration
 
-To work with the backend, edit `src/setupProxy.js`.
+To work with the backend, create a file `src/setupProxy.js` with the following content.
 Replace the `target` value with the url of your own server.
 
-Remember to stop and run `npm start` again.
+```javascript
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
+module.exports = function(app) {
+    app.use(
+        createProxyMiddleware('/api', {
+            target: 'http://127.0.0.1:3876',
+            ws: true
+        })
+    );
+};
+```
+
+Remember to stop and run `npm run start` again.
 
 ## Environment variables
 
