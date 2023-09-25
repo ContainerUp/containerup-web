@@ -1,20 +1,37 @@
 # ContainerUp Web
 
-This project is the frontend page of the [ContainerUp](https://github.com/ContainerUp) project.
+This repository is the frontend page of the [ContainerUp](https://github.com/ContainerUp) project,
+a [Podman](https://podman.io/) manager in your browser.
 It works alongside the [API backend](https://github.com/ContainerUp/containerup) project.
 
 ## How to get started
 
+### I only need the artifacts
+
+Maybe you want to develop the backend, and don't get involved in the frontend development.
+Use a Podman container to build everything!
+
 ```shell
-# Install dependencies
-npm install
+# clone this repository first
+git clone --depth=1 https://github.com/ContainerUp/containerup-web.git
 
-# Run the app in the development mode
-npm run start
+# go to the workspace
+cd containerup-web
 
+# build
+BUILD=$(date -u +%Y%m%d%H%M%S)
+SHA=$(git rev-parse HEAD)
+COMMIT=${SHA::7}
+podman run --rm -v .:/app -w /app -e "REACT_APP_CONTAINERUP_BUILD=$BUILD" -e "REACT_APP_CONTAINERUP_COMMIT=$COMMIT" docker.io/library/node:18 sh -c "npm install && npm run build"
+
+# your artifacts here, copy them to the working directory of the backend
+ls build
+# asset-manifest.json  favicon.ico  index.html  robots.txt  static
 ```
 
-## Configuration
+### Typical way
+
+#### Create a reverse proxy configuration
 
 To work with the backend, create a file `src/setupProxy.js` with the following content.
 Replace the `target` value with the url of your own server.
@@ -32,9 +49,21 @@ module.exports = function(app) {
 };
 ```
 
-Remember to stop and run `npm run start` again.
+#### Run the project
+
+Setup some optional [environment variables](#environment-variables) if you need. Then some final commands.
+
+```shell
+# Install dependencies
+npm install
+
+# Run the app in the development mode
+npm run start
+```
 
 ## Environment variables
+
+There are some configurations that can be specified by environment variables.
 
 ```shell
 # version information showed in the app
@@ -47,3 +76,9 @@ REACT_APP_CONTAINERUP_DEMO=
 REACT_APP_CONTAINERUP_GA4=
 ```
 
+The values of environment variables are determined when the project is built, specifically, when you run `npm run start`
+or `npm run build`. You can specify them like this:
+
+```shell
+REACT_APP_CONTAINERUP_XXXXX=xxxxx REACT_APP_CONTAINERUP_YYYYY=yyyyy npm run build
+```
