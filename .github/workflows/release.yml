@@ -25,16 +25,20 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
+          cache: npm
       - name: Install dependencies
         run: npm install
       - name: Build project
         run: |
-          SHA=$(git rev-parse HEAD)
-          export REACT_APP_CONTAINERUP_BUILD=${{ inputs.build_num }}
-          export REACT_APP_CONTAINERUP_COMMIT=${SHA::7}
+          COMMIT=$(git rev-parse --short HEAD)
+          export REACT_APP_CONTAINERUP_BUILD=${BUILD_NUM}
+          export REACT_APP_CONTAINERUP_COMMIT=${COMMIT}
           echo BUILD=${REACT_APP_CONTAINERUP_BUILD}
           echo COMMIT=${REACT_APP_CONTAINERUP_COMMIT}
+          echo "COMMIT=${COMMIT}" >> ${GITHUB_OUTPUT}
           npm run build
+        env:
+          BUILD_NUM: ${{ inputs.build_num }}
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
