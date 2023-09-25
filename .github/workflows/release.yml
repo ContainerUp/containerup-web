@@ -11,6 +11,10 @@ on:
         required: true
         description: The build number
         type: string
+    outputs:
+      COMMIT:
+        description: "The commit hash of the build"
+        value: ${{ jobs.build.outputs.COMMIT }}
 
 jobs:
   build:
