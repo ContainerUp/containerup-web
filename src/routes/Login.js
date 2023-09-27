@@ -3,7 +3,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import Typography from "@mui/material/Typography";
 import MyAppBar from "../components/MyAppBar";
 
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import dataModel from '../lib/dataModel';
 import {Container, Snackbar, Alert} from "@mui/material";
 import {useNavigate, useSearchParams} from "react-router-dom";
@@ -60,7 +60,14 @@ export default function Login() {
 
     const handleCloseSnackbar = () => {
         setShowAlert(false);
-    }
+    };
+
+    useEffect(() => {
+        document.title = 'ContainerUp - Login';
+        if (process.env.REACT_APP_CONTAINERUP_DEMO) {
+            document.title = 'ContainerUp Demo - Login';
+        }
+    }, []);
 
     return (
         <>
