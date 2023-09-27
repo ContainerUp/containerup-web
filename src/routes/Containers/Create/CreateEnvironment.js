@@ -1,14 +1,16 @@
-import {Box, Button, Stack} from "@mui/material";
+import {Accordion, AccordionDetails, AccordionSummary, Box, Button, Stack, Tooltip} from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 import TextField from "@mui/material/TextField";
 import IconButton from "@mui/material/IconButton";
-import {green} from "@mui/material/colors";
+import {green, grey, orange} from "@mui/material/colors";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import {useEffect, useMemo, useRef, useState} from "react";
 import ClearIcon from "@mui/icons-material/Clear";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreIcon from '@mui/icons-material/Restore';
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Typography from "@mui/material/Typography";
 
 const envRe = /^([a-zA-Z0-9_]+)=(.*)$/;
 const envNameRe = /^[a-zA-Z0-9_]+$/;
@@ -155,42 +157,50 @@ const Env = ({env, editing, onChange, onEditing, onDelete, disabled}) => {
                     </>
                 ) : (
                     <>
-                        <IconButton
-                            onClick={event => {
-                                event.preventDefault();
-                                onEditing(true);
-                            }}
-                            color="primary"
-                            aria-label="edit"
-                            disabled={disabled}
-                            type="button"
-                        >
-                            <EditIcon />
-                        </IconButton>
-                        {!env.predefined && (
+                        <Tooltip title="Edit">
                             <IconButton
                                 onClick={event => {
                                     event.preventDefault();
-                                    onDelete();
+                                    onEditing(true);
                                 }}
-                                color="warning"
-                                aria-label="remove"
+                                color="primary"
+                                aria-label="edit"
                                 disabled={disabled}
                                 type="button"
                             >
-                                <DeleteIcon />
+                                <EditIcon />
                             </IconButton>
+                        </Tooltip>
+
+                        {!env.predefined && (
+                            <Tooltip title="Remove">
+                                <IconButton
+                                    onClick={event => {
+                                        event.preventDefault();
+                                        onDelete();
+                                    }}
+                                    color="warning"
+                                    aria-label="remove"
+                                    disabled={disabled}
+                                    type="button"
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Tooltip>
                         )}
+
                         {env.predefined && env.value !== env.default && (
-                            <IconButton
-                                onClick={handleReset}
-                                color="warning"
-                                aria-label="reset"
-                                disabled={disabled}
-                                type="button"
-                            >
-                                <RestoreIcon />
-                            </IconButton>
+                            <Tooltip title="Reset">
+                                <IconButton
+                                    onClick={handleReset}
+                                    color="warning"
+                                    aria-label="reset"
+                                    disabled={disabled}
+                                    type="button"
+                                >
+                                    <RestoreIcon />
+                                </IconButton>
+                            </Tooltip>
                         )}
                     </>
                 )}
@@ -200,7 +210,7 @@ const Env = ({env, editing, onChange, onEditing, onDelete, disabled}) => {
     );
 }
 
-export default function CreateEnvironment({envs, imageDetail, onEdited, onConfirm}) {
+function CreateEnvironment({envs, imageDetail, onEdited, onConfirm}) {
     const [editEnvs, setEditEnvs] = useState(envs);
     const editingGenerator = () => {
         const map = {};
@@ -223,6 +233,7 @@ export default function CreateEnvironment({envs, imageDetail, onEdited, onConfir
     };
     const [editing, setEditing] = useState(editingGenerator);
     const [version, setVersion] = useState(0);
+    const editedVal = useRef(false);
 
     const combinedEnvs = useMemo(() => {
         const ret = [];
@@ -326,6 +337,7 @@ export default function CreateEnvironment({envs, imageDetail, onEdited, onConfir
     const handleConfirm = () => {
         onConfirm(editEnvs);
         onEdited(false);
+        editedVal.current = false;
     };
 
     const handleRevert = () => {
@@ -352,7 +364,11 @@ export default function CreateEnvironment({envs, imageDetail, onEdited, onConfir
     }, [editEnvs, envs]);
 
     useEffect(() => {
-        onEdited(changed || anyEditing);
+        const v = changed || anyEditing;
+        if (v !== editedVal.current) {
+            onEdited(v);
+            editedVal.current = v;
+        }
     }, [anyEditing, changed, onEdited]);
 
     const handleAdd = () => {
@@ -378,14 +394,16 @@ export default function CreateEnvironment({envs, imageDetail, onEdited, onConfir
             ))}
 
             <Box>
-                <IconButton
-                    aria-label="add"
-                    sx={{color: green[500]}}
-                    disabled={anyEditing}
-                    onClick={handleAdd}
-                >
-                    <AddCircleOutlineIcon />
-                </IconButton>
+                <Tooltip title="Add">
+                    <IconButton
+                        aria-label="add"
+                        sx={{color: green[500]}}
+                        disabled={anyEditing}
+                        onClick={handleAdd}
+                    >
+                        <AddCircleOutlineIcon />
+                    </IconButton>
+                </Tooltip>
             </Box>
 
             <Stack direction="row" spacing={1}>
@@ -410,5 +428,47 @@ export default function CreateEnvironment({envs, imageDetail, onEdited, onConfir
             </Stack>
 
         </Stack>
+    );
+}
+
+export default function AccordionEnvironment({open, disabled, edited, onExpandChange, version, imageDetail, onEdited, onConfirm, envs}) {
+    return (
+        <Accordion
+            expanded={open}
+            onChange={onExpandChange}
+            disabled={disabled}
+        >
+            <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel3a-content"
+                id="panel3a-header"
+            >
+                <Typography sx={{ flexGrow: 1 }}>
+                    Environment variables
+                </Typography>
+                {edited && open && (
+                    <Typography sx={{color: orange[500]}}>
+                        Not saved yet
+                    </Typography>
+                )}
+                {!disabled && !open && envs.length > 0 && (
+                    <Typography sx={{color: grey[500]}}>
+                        {envs.length} customized variable{envs.length > 1 && 's'}
+                    </Typography>
+                )}
+            </AccordionSummary>
+            <AccordionDetails>
+                {/* avoid empty imageDetail */}
+                {imageDetail && (
+                    <CreateEnvironment
+                        key={version}
+                        envs={envs}
+                        imageDetail={imageDetail}
+                        onEdited={onEdited}
+                        onConfirm={onConfirm}
+                    />
+                )}
+            </AccordionDetails>
+        </Accordion>
     );
 }

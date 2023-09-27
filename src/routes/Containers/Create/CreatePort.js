@@ -1,7 +1,17 @@
 import TextField from "@mui/material/TextField";
-import {Box, Button, MenuItem, Select, Stack} from "@mui/material";
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Box,
+    Button,
+    MenuItem,
+    Select,
+    Stack,
+    Tooltip
+} from "@mui/material";
 import IconButton from "@mui/material/IconButton";
-import {green} from "@mui/material/colors";
+import {green, grey, orange} from "@mui/material/colors";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import CheckIcon from "@mui/icons-material/Check";
 import {useEffect, useMemo, useRef, useState} from "react";
@@ -9,6 +19,8 @@ import ClearIcon from "@mui/icons-material/Clear";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import RestoreIcon from "@mui/icons-material/Restore";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Typography from "@mui/material/Typography";
 
 const checkContainerPort = str => {
     const p = parseInt(str);
@@ -215,31 +227,36 @@ const Port = ({port, editing, onChange, onEditing, onDelete, disabled}) => {
                     </>
                 ) : (
                     <>
-                        <IconButton
-                            onClick={event => {
-                                event.preventDefault();
-                                onEditing(true);
-                            }}
-                            color="primary"
-                            aria-label="edit"
-                            disabled={disabled}
-                            type="button"
-                        >
-                            <EditIcon />
-                        </IconButton>
-                        {!port.predefined && (
+                        <Tooltip title="Edit">
                             <IconButton
                                 onClick={event => {
                                     event.preventDefault();
-                                    onDelete();
+                                    onEditing(true);
                                 }}
-                                color="warning"
-                                aria-label="remove"
+                                color="primary"
+                                aria-label="edit"
                                 disabled={disabled}
                                 type="button"
                             >
-                                <DeleteIcon />
+                                <EditIcon />
                             </IconButton>
+                        </Tooltip>
+
+                        {!port.predefined && (
+                            <Tooltip title="Remove">
+                                <IconButton
+                                    onClick={event => {
+                                        event.preventDefault();
+                                        onDelete();
+                                    }}
+                                    color="warning"
+                                    aria-label="remove"
+                                    disabled={disabled}
+                                    type="button"
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Tooltip>
                         )}
 
                     </>
@@ -250,7 +267,7 @@ const Port = ({port, editing, onChange, onEditing, onDelete, disabled}) => {
     );
 };
 
-export default function CreatePort({ports, imageDetail, onEdited, onConfirm}) {
+function CreatePort({ports, imageDetail, onEdited, onConfirm}) {
     const [editPorts, setEditPorts] = useState(ports);
     const editingGenerator = () => {
         const map = {};
@@ -272,6 +289,7 @@ export default function CreatePort({ports, imageDetail, onEdited, onConfirm}) {
     };
     const [editing, setEditing] = useState(editingGenerator);
     const [version, setVersion] = useState(0);
+    const editedVal = useRef(false);
 
     const combinedPorts = useMemo(() => {
         const ret = [];
@@ -389,6 +407,7 @@ export default function CreatePort({ports, imageDetail, onEdited, onConfirm}) {
     const handleConfirm = () => {
         onConfirm(editPorts);
         onEdited(false);
+        editedVal.current = false;
     };
 
     const handleRevert = () => {
@@ -415,7 +434,11 @@ export default function CreatePort({ports, imageDetail, onEdited, onConfirm}) {
     }, [editPorts, ports]);
 
     useEffect(() => {
-        onEdited(changed || anyEditing);
+        const v = changed || anyEditing;
+        if (v !== editedVal.current) {
+            onEdited(v);
+            editedVal.current = v;
+        }
     }, [anyEditing, changed, onEdited]);
 
     const handleAdd = () => {
@@ -442,14 +465,16 @@ export default function CreatePort({ports, imageDetail, onEdited, onConfirm}) {
             ))}
 
             <Box>
-                <IconButton
-                    aria-label="add"
-                    sx={{color: green[500]}}
-                    disabled={anyEditing}
-                    onClick={handleAdd}
-                >
-                    <AddCircleOutlineIcon />
-                </IconButton>
+                <Tooltip title="Add">
+                    <IconButton
+                        aria-label="add"
+                        sx={{color: green[500]}}
+                        disabled={anyEditing}
+                        onClick={handleAdd}
+                    >
+                        <AddCircleOutlineIcon />
+                    </IconButton>
+                </Tooltip>
             </Box>
 
             <Stack direction="row" spacing={1}>
@@ -474,5 +499,47 @@ export default function CreatePort({ports, imageDetail, onEdited, onConfirm}) {
             </Stack>
 
         </Stack>
+    );
+}
+
+export default function AccordionPort({open, disabled, edited, onExpandChange, version, imageDetail, onEdited, onConfirm, ports}) {
+    return (
+        <Accordion
+            expanded={open}
+            onChange={onExpandChange}
+            disabled={disabled}
+        >
+            <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel5a-content"
+                id="panel5a-header"
+            >
+                <Typography sx={{ flexGrow: 1 }}>
+                    Ports
+                </Typography>
+                {edited && open && (
+                    <Typography sx={{color: orange[500]}}>
+                        Not saved yet
+                    </Typography>
+                )}
+                {!disabled && !open && ports.length > 0 && (
+                    <Typography sx={{color: grey[500]}}>
+                        {ports.length} port{ports.length > 1 && 's'}
+                    </Typography>
+                )}
+            </AccordionSummary>
+            <AccordionDetails>
+                {/* avoid empty imageDetail */}
+                {imageDetail && (
+                    <CreatePort
+                        key={version}
+                        ports={ports}
+                        imageDetail={imageDetail}
+                        onEdited={onEdited}
+                        onConfirm={onConfirm}
+                    />
+                )}
+            </AccordionDetails>
+        </Accordion>
     );
 }

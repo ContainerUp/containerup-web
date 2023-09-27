@@ -4,36 +4,39 @@ import {
     AccordionSummary, Alert,
     Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Stack,
 } from "@mui/material";
-import {useEffect, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import {grey, orange} from "@mui/material/colors";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {getController} from "../../../lib/HostGuestController";
 import CreateNameImage from "./CreateNameImage";
 import {getImageNameFromInspection} from "../../../lib/imageUtil";
-import CreateEntrypointCmd from "./CreateEntrypointCmd";
-import CreateEnvironment from "./CreateEnvironment";
-import CreateVolume from "./CreateVolume";
-import CreatePort from "./CreatePort";
+import AccordionEntrypointCmd from "./CreateEntrypointCmd";
+import AccordionEnvironment from "./CreateEnvironment";
+import AccordionVolume from "./CreateVolume";
+import AccordionPort from "./CreatePort";
 import dataModel from "../../../lib/dataModel";
 import {useNavigate} from "react-router-dom";
 import {enqueueSnackbar} from "notistack";
+
+const allFalse = [false, false, false, false, false];
+const allZero = [0, 0, 0, 0, 0];
 
 export default function ContainerCreate() {
     const navigate = useNavigate();
     const [open, setOpen] = useState([true, false, false, false, false]);
     const [disabled, setDisabled] = useState([false, true, true, true, true]);
-    const [edited, setEdited] = useState([false, false, false, false, false]);
+    const [edited, setEdited] = useState(allFalse);
 
-    const [showDialog, setShowDialog] = useState(false);
+    const [showDialogDiscard, setShowDialogDiscard] = useState(false);
     const [dialogIntent, setDialogIntent] = useState(null);
 
     const [name, setName] = useState('');
     const [imageDetail, setImageDetail] = useState(null);
 
-    const [version, setVersion] = useState([0, 0, 0, 0, 0]);
-    const [cmd, setCmd] = useState('');
-    const [workDir, setWorkDir] = useState('');
+    const [version, setVersion] = useState(allZero);
+    const [cmd, setCmd] = useState(undefined);
+    const [workDir, setWorkDir] = useState(undefined);
     const [envs, setEnvs] = useState([]);
     const [volumes, setVolumes] = useState([]);
     const [ports, setPorts] = useState([]);
@@ -41,17 +44,17 @@ export default function ContainerCreate() {
     const [errMsg, setErrMsg] = useState('');
     const [creating, setCreating] = useState(false);
 
-    const setOnlyOneOpen = index => {
-        setOpen(open.map((val, i) => {
+    const setOnlyOneOpen = useCallback(index => {
+        setOpen(open => open.map((val, i) => {
             return i === index;
         }));
-    };
+    }, []);
 
     const anyEdited = useMemo(() => {
         return edited.indexOf(true) !== -1;
     }, [edited]);
 
-    const handleExpandedChange = (index, expanded) => {
+    const handleExpandedChange = useCallback((index, expanded) => {
         if (index === 0 && !imageDetail) {
             if (expanded) {
                 setOnlyOneOpen(index);
@@ -67,7 +70,7 @@ export default function ContainerCreate() {
                 index,
                 expanded
             });
-            setShowDialog(true);
+            setShowDialogDiscard(true);
             return;
         }
         if (expanded && anyEdited) {
@@ -76,41 +79,105 @@ export default function ContainerCreate() {
                 index,
                 expanded
             });
-            setShowDialog(true);
+            setShowDialogDiscard(true);
             return;
         }
 
         // open only one
-        setOpen(open.map((val, i) => {
+        setOpen(open => open.map((val, i) => {
             if (i === index) {
                 return expanded;
             }
             return false;
         }));
-    };
+    }, [anyEdited, edited, imageDetail, setOnlyOneOpen]);
 
-    const handleEdited = (i, newVal) => {
-        if (edited[i] === newVal) {
-            return;
-        }
-        setEdited(edited.map((oldVal, idx) => {
+    const handleEdited = useCallback((i, newVal) => {
+        setEdited(edited => edited.map((oldVal, idx) => {
             if (idx === i) {
                 return newVal;
             }
             return oldVal;
         }));
-    };
+    }, []);
 
-    const handleConfirmNameImage = p => {
+    // NameImage
+    const handleOpenChangeNameImage = useCallback((event, open) => {
+        handleExpandedChange(0, open);
+    }, [handleExpandedChange]);
+
+    const handleEditedNameImage = useCallback(v => {
+        handleEdited(0, v);
+    }, [handleEdited]);
+
+    const handleConfirmNameImage = useCallback(p => {
         setName(p.name);
         setImageDetail(p.imageDetail);
 
         setOnlyOneOpen(1);
-        setDisabled([false, false, false, false, false]);
-    };
+        setDisabled(allFalse);
+    }, [setOnlyOneOpen]);
+
+    // EntrypointCmd
+    const handleOpenChangeEntrypointCmd = useCallback((event, open) => {
+        handleExpandedChange(1, open);
+    }, [handleExpandedChange]);
+
+    const handleEditedEntrypointCmd = useCallback(v => {
+        handleEdited(1, v);
+    }, [handleEdited]);
+
+    const handleConfirmEntrypointCmd = useCallback(p => {
+        setCmd(p.cmd);
+        setWorkDir(p.workDir);
+        setOnlyOneOpen(2);
+    }, [setOnlyOneOpen]);
+
+    // Env
+    const handleOpenChangeEnv = useCallback((event, open) => {
+        handleExpandedChange(2, open);
+    }, [handleExpandedChange]);
+
+    const handleEditedEnv = useCallback(v => {
+        handleEdited(2, v);
+    }, [handleEdited]);
+
+    const handleConfirmEnv = useCallback(p => {
+        setEnvs(p);
+        setOnlyOneOpen(3);
+    }, [setOnlyOneOpen]);
+
+    // Volume
+    const handleOpenChangeVolume = useCallback((event, open) => {
+        handleExpandedChange(3, open);
+    }, [handleExpandedChange]);
+
+    const handleEditedVolume = useCallback(v => {
+        handleEdited(3, v);
+    }, [handleEdited]);
+
+    const handleConfirmVolume = useCallback(p => {
+        setVolumes(p);
+        setOnlyOneOpen(4);
+    }, [setOnlyOneOpen]);
+
+    // Port
+    const handleOpenChangePort = useCallback((event, open) => {
+        handleExpandedChange(4, open);
+    }, [handleExpandedChange]);
+
+    const handleEditedPort = useCallback(v => {
+        handleEdited(4, v);
+    }, [handleEdited]);
+
+    const handleConfirmPort = useCallback(p => {
+        setPorts(p);
+        setOnlyOneOpen(-1);
+    }, [setOnlyOneOpen]);
+
 
     const handleDialogCancel = () => {
-        setShowDialog(false);
+        setShowDialogDiscard(false);
     };
 
     const handleDialogDiscard = () => {
@@ -121,7 +188,7 @@ export default function ContainerCreate() {
             }
             return v;
         }));
-        setEdited([false, false, false, false, false]);
+        setEdited(allFalse);
 
         // open only one
         setOpen(open.map((val, i) => {
@@ -131,7 +198,7 @@ export default function ContainerCreate() {
             return false;
         }));
         setDialogIntent(null);
-        setShowDialog(false);
+        setShowDialogDiscard(false);
     };
 
     // breadcrumb
@@ -189,6 +256,9 @@ export default function ContainerCreate() {
                     Container <b>{name}</b> ({data.Id.substring(0, 12)}) has been created.
                 </span>);
                 enqueueSnackbar(msg, {variant: 'success'});
+                if (data.StartErr) {
+                    enqueueSnackbar(data.StartErr, {variant: 'error'});
+                }
             })
             .catch(error => {
                 if (ac.signal.aborted) {
@@ -224,7 +294,7 @@ export default function ContainerCreate() {
         <Box sx={{margin: "0 36px"}}>
             <Accordion
                 expanded={open[0]}
-                onChange={(event, open) => handleExpandedChange(0, open)}
+                onChange={handleOpenChangeNameImage}
                 disabled={disabled[0]}
             >
                 <AccordionSummary
@@ -250,191 +320,64 @@ export default function ContainerCreate() {
                     <CreateNameImage
                         name={name}
                         image={getImageNameFromInspection(imageDetail)}
-                        onEdited={v => handleEdited(0, v)}
+                        onEdited={handleEditedNameImage}
                         onConfirm={handleConfirmNameImage}
                     />
                 </AccordionDetails>
             </Accordion>
 
-            <Accordion
-                expanded={open[1]}
-                onChange={(event, open) => handleExpandedChange(1, open)}
+            <AccordionEntrypointCmd
+                open={open[1]}
                 disabled={disabled[1]}
-            >
-                <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel2a-content"
-                    id="panel2a-header"
-                >
-                    <Typography sx={{ flexGrow: 1 }}>
-                        Entrypoint, Command, and WorkingDirectory
-                    </Typography>
-                    {edited[1] && open[1] && (
-                        <Typography sx={{color: orange[500]}}>
-                            Not saved yet
-                        </Typography>
-                    )}
-                    {!disabled[1] && !open[1] && (!!cmd || !!workDir) && (
-                        <Typography sx={{color: grey[500]}}>
-                            {!!cmd && (
-                                <>
-                                    Command: {cmd}
-                                </>
-                            )}
-                            {!!cmd && !!workDir && ' '}
-                            {!!workDir && (
-                                <>
-                                    WorkingDir: {workDir}
-                                </>
-                            )}
-                        </Typography>
-                    )}
-                </AccordionSummary>
-                <AccordionDetails>
-                    {/* avoid empty imageDetail */}
-                    {imageDetail && (
-                        <CreateEntrypointCmd
-                            key={version[1]}
-                            cmd={cmd}
-                            workDir={workDir}
-                            imageDetail={imageDetail}
-                            onEdited={v => handleEdited(1, v)}
-                            onConfirm={p => {
-                                setCmd(p.cmd);
-                                setWorkDir(p.workDir);
-                                setOnlyOneOpen(2);
-                            }}
-                        />
-                    )}
-                </AccordionDetails>
-            </Accordion>
+                edited={edited[1]}
+                onExpandChange={handleOpenChangeEntrypointCmd}
+                version={version[1]}
+                imageDetail={imageDetail}
+                onEdited={handleEditedEntrypointCmd}
+                onConfirm={handleConfirmEntrypointCmd}
+                cmd={cmd}
+                workDir={workDir}
+            />
 
-            <Accordion
-                expanded={open[2]}
-                onChange={(event, open) => handleExpandedChange(2, open)}
+            <AccordionEnvironment
+                open={open[2]}
                 disabled={disabled[2]}
-            >
-                <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel3a-content"
-                    id="panel3a-header"
-                >
-                    <Typography sx={{ flexGrow: 1 }}>
-                        Environment variables
-                    </Typography>
-                    {edited[2] && open[2] && (
-                        <Typography sx={{color: orange[500]}}>
-                            Not saved yet
-                        </Typography>
-                    )}
-                    {!disabled[2] && !open[2] && envs.length > 0 && (
-                        <Typography sx={{color: grey[500]}}>
-                            {envs.length} customized variable{envs.length > 1 && 's'}
-                        </Typography>
-                    )}
-                </AccordionSummary>
-                <AccordionDetails>
-                    {/* avoid empty imageDetail */}
-                    {imageDetail && (
-                        <CreateEnvironment
-                            key={version[2]}
-                            envs={envs}
-                            imageDetail={imageDetail}
-                            onEdited={v => handleEdited(2, v)}
-                            onConfirm={p => {
-                                setEnvs(p);
-                                setOnlyOneOpen(3);
-                            }}
-                        />
-                    )}
-                </AccordionDetails>
-            </Accordion>
+                edited={edited[2]}
+                onExpandChange={handleOpenChangeEnv}
+                version={version[2]}
+                imageDetail={imageDetail}
+                onEdited={handleEditedEnv}
+                onConfirm={handleConfirmEnv}
+                envs={envs}
+            />
 
-            <Accordion
-                expanded={open[3]}
-                onChange={(event, open) => handleExpandedChange(3, open)}
+            <AccordionVolume
+                open={open[3]}
                 disabled={disabled[3]}
-            >
-                <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel4a-content"
-                    id="panel4a-header"
-                >
-                    <Typography sx={{ flexGrow: 1 }}>
-                        Volumes
-                    </Typography>
-                    {edited[3] && open[3] && (
-                        <Typography sx={{color: orange[500]}}>
-                            Not saved yet
-                        </Typography>
-                    )}
-                    {!disabled[3] && !open[3] && volumes.length > 0 && (
-                        <Typography sx={{color: grey[500]}}>
-                            {volumes.length} volume{volumes.length > 1 && 's'}
-                        </Typography>
-                    )}
-                </AccordionSummary>
-                <AccordionDetails>
-                    {/* avoid empty imageDetail */}
-                    {imageDetail && (
-                        <CreateVolume
-                            key={version[3]}
-                            volumes={volumes}
-                            imageDetail={imageDetail}
-                            onEdited={v => handleEdited(3, v)}
-                            onConfirm={p => {
-                                setVolumes(p);
-                                setOnlyOneOpen(4);
-                            }}
-                        />
-                    )}
-                </AccordionDetails>
-            </Accordion>
+                edited={edited[3]}
+                onExpandChange={handleOpenChangeVolume}
+                version={version[3]}
+                imageDetail={imageDetail}
+                onEdited={handleEditedVolume}
+                onConfirm={handleConfirmVolume}
+                volumes={volumes}
+            />
 
-            <Accordion
-                expanded={open[4]}
-                onChange={(event, open) => handleExpandedChange(4, open)}
+            <AccordionPort
+                open={open[4]}
                 disabled={disabled[4]}
-            >
-                <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel5a-content"
-                    id="panel5a-header"
-                >
-                    <Typography sx={{ flexGrow: 1 }}>
-                        Ports
-                    </Typography>
-                    {edited[4] && open[4] && (
-                        <Typography sx={{color: orange[500]}}>
-                            Not saved yet
-                        </Typography>
-                    )}
-                    {!disabled[4] && !open[4] && ports.length > 0 && (
-                        <Typography sx={{color: grey[500]}}>
-                            {ports.length} port{ports.length > 1 && 's'}
-                        </Typography>
-                    )}
-                </AccordionSummary>
-                <AccordionDetails>
-                    {/* avoid empty imageDetail */}
-                    {imageDetail && (
-                        <CreatePort
-                            key={version[4]}
-                            ports={ports}
-                            imageDetail={imageDetail}
-                            onEdited={v => handleEdited(4, v)}
-                            onConfirm={p => {
-                                setPorts(p);
-                                setOnlyOneOpen(-1);
-                            }}
-                        />
-                    )}
-                </AccordionDetails>
-            </Accordion>
+                edited={edited[4]}
+                onExpandChange={handleOpenChangePort}
+                version={version[4]}
+                imageDetail={imageDetail}
+                onEdited={handleEditedPort}
+                onConfirm={handleConfirmPort}
+                ports={ports}
+            />
 
 
             <Dialog
-                open={showDialog}
+                open={showDialogDiscard}
                 onClose={handleDialogCancel}
                 aria-labelledby="alert-dialog-title-discard"
                 aria-describedby="alert-dialog-description-discard"

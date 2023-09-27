@@ -1,14 +1,26 @@
 import {useEffect, useMemo, useRef, useState} from "react";
-import {Box, Button, MenuItem, Select, Stack} from "@mui/material";
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Box,
+    Button,
+    MenuItem,
+    Select,
+    Stack,
+    Tooltip
+} from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 import TextField from "@mui/material/TextField";
 import IconButton from "@mui/material/IconButton";
-import {green} from "@mui/material/colors";
+import {green, grey, orange} from "@mui/material/colors";
 import ClearIcon from "@mui/icons-material/Clear";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RestoreIcon from "@mui/icons-material/Restore";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Typography from "@mui/material/Typography";
 
 const Volume = ({volume, editing, onChange, onEditing, onDelete, disabled}) => {
     const inputRefContainer = useRef();
@@ -148,31 +160,36 @@ const Volume = ({volume, editing, onChange, onEditing, onDelete, disabled}) => {
                     </>
                 ) : (
                     <>
-                        <IconButton
-                            onClick={event => {
-                                event.preventDefault();
-                                onEditing(true);
-                            }}
-                            color="primary"
-                            aria-label="edit"
-                            disabled={disabled}
-                            type="button"
-                        >
-                            <EditIcon />
-                        </IconButton>
-                        {!volume.predefined && (
+                        <Tooltip title="Edit">
                             <IconButton
                                 onClick={event => {
                                     event.preventDefault();
-                                    onDelete();
+                                    onEditing(true);
                                 }}
-                                color="warning"
-                                aria-label="remove"
+                                color="primary"
+                                aria-label="edit"
                                 disabled={disabled}
                                 type="button"
                             >
-                                <DeleteIcon />
+                                <EditIcon />
                             </IconButton>
+                        </Tooltip>
+
+                        {!volume.predefined && (
+                            <Tooltip title="Remove">
+                                <IconButton
+                                    onClick={event => {
+                                        event.preventDefault();
+                                        onDelete();
+                                    }}
+                                    color="warning"
+                                    aria-label="remove"
+                                    disabled={disabled}
+                                    type="button"
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Tooltip>
                         )}
                     </>
                 )}
@@ -182,7 +199,7 @@ const Volume = ({volume, editing, onChange, onEditing, onDelete, disabled}) => {
     );
 };
 
-export default function CreateVolume({volumes, imageDetail, onEdited, onConfirm}) {
+function CreateVolume({volumes, imageDetail, onEdited, onConfirm}) {
     const [editVolumes, setEditVolumes] = useState(volumes);
     const editingGenerator = () => {
         const map = {};
@@ -204,6 +221,7 @@ export default function CreateVolume({volumes, imageDetail, onEdited, onConfirm}
     };
     const [editing, setEditing] = useState(editingGenerator);
     const [version, setVersion] = useState(0);
+    const editedVal = useRef(false);
 
     const combinedVolumes = useMemo(() => {
         const ret = [];
@@ -303,6 +321,7 @@ export default function CreateVolume({volumes, imageDetail, onEdited, onConfirm}
     const handleConfirm = () => {
         onConfirm(editVolumes);
         onEdited(false);
+        editedVal.current = false;
     };
 
     const handleRevert = () => {
@@ -329,7 +348,11 @@ export default function CreateVolume({volumes, imageDetail, onEdited, onConfirm}
     }, [editVolumes, volumes]);
 
     useEffect(() => {
-        onEdited(changed || anyEditing);
+        const v = changed || anyEditing;
+        if (v !== editedVal.current) {
+            onEdited(v);
+            editedVal.current = v;
+        }
     }, [anyEditing, changed, onEdited]);
 
     const handleAdd = () => {
@@ -356,14 +379,16 @@ export default function CreateVolume({volumes, imageDetail, onEdited, onConfirm}
             ))}
 
             <Box>
-                <IconButton
-                    aria-label="add"
-                    sx={{color: green[500]}}
-                    disabled={anyEditing}
-                    onClick={handleAdd}
-                >
-                    <AddCircleOutlineIcon />
-                </IconButton>
+                <Tooltip title="Add">
+                    <IconButton
+                        aria-label="add"
+                        sx={{color: green[500]}}
+                        disabled={anyEditing}
+                        onClick={handleAdd}
+                    >
+                        <AddCircleOutlineIcon />
+                    </IconButton>
+                </Tooltip>
             </Box>
 
             <Stack direction="row" spacing={1}>
@@ -388,5 +413,47 @@ export default function CreateVolume({volumes, imageDetail, onEdited, onConfirm}
             </Stack>
 
         </Stack>
+    );
+}
+
+export default function AccordionVolume({open, disabled, edited, onExpandChange, version, imageDetail, onEdited, onConfirm, volumes}) {
+    return (
+        <Accordion
+            expanded={open}
+            onChange={onExpandChange}
+            disabled={disabled}
+        >
+            <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel4a-content"
+                id="panel4a-header"
+            >
+                <Typography sx={{ flexGrow: 1 }}>
+                    Volumes
+                </Typography>
+                {edited && open && (
+                    <Typography sx={{color: orange[500]}}>
+                        Not saved yet
+                    </Typography>
+                )}
+                {!disabled && !open && volumes.length > 0 && (
+                    <Typography sx={{color: grey[500]}}>
+                        {volumes.length} volume{volumes.length > 1 && 's'}
+                    </Typography>
+                )}
+            </AccordionSummary>
+            <AccordionDetails>
+                {/* avoid empty imageDetail */}
+                {imageDetail && (
+                    <CreateVolume
+                        key={version}
+                        volumes={volumes}
+                        imageDetail={imageDetail}
+                        onEdited={onEdited}
+                        onConfirm={onConfirm}
+                    />
+                )}
+            </AccordionDetails>
+        </Accordion>
     );
 }

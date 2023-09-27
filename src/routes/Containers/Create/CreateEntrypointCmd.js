@@ -1,4 +1,14 @@
-import {Autocomplete, Box, Button, Chip, Stack} from "@mui/material";
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Autocomplete,
+    Box,
+    Button,
+    Chip,
+    Stack,
+    Tooltip
+} from "@mui/material";
 import TextField from "@mui/material/TextField";
 import {useEffect, useMemo, useRef, useState} from "react";
 import EditIcon from '@mui/icons-material/Edit';
@@ -6,16 +16,23 @@ import ClearIcon from '@mui/icons-material/Clear';
 import CheckIcon from '@mui/icons-material/Check';
 import IconButton from "@mui/material/IconButton";
 import RestoreIcon from '@mui/icons-material/Restore';
-import {green} from "@mui/material/colors";
+import {green, grey, orange} from "@mui/material/colors";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Typography from "@mui/material/Typography";
 
-const Cmd = ({cmd, imageDetail, editing, onChange, onEditing, disabled}) => {
+const Cmd = ({cmd, cmdDefault, editing, onChange, onEditing, disabled}) => {
     const inputRef = useRef();
 
     const handleSubmit = (event) => {
         event.preventDefault();
 
         onEditing(false);
-        onChange(inputRef.current.value);
+
+        let val = inputRef.current.value;
+        if (cmdDefault.length === 1 && cmdDefault[0] === val) {
+            val = undefined;
+        }
+        onChange(val);
     };
 
     useEffect(() => {
@@ -26,21 +43,19 @@ const Cmd = ({cmd, imageDetail, editing, onChange, onEditing, disabled}) => {
 
     return (
         <Stack direction="row" spacing={1} component="form" onSubmit={handleSubmit}>
-            {(editing || cmd) ? (
+            {(editing || cmd !== undefined) ? (
                 <TextField
                     label="Command"
                     size="small"
-                    defaultValue={cmd}
                     sx={{ width: 400 }}
                     disabled={!editing}
                     inputRef={inputRef}
-                    helperText={editing ? 'Clear to return to default' : ''}
                 />
             ) : (
                 <Autocomplete
                     multiple
-                    options={imageDetail.Config.Cmd || []}
-                    defaultValue={imageDetail.Config.Cmd || []}
+                    options={cmdDefault}
+                    defaultValue={cmdDefault}
                     readOnly
                     freeSolo
                     renderInput={(params) => (
@@ -79,17 +94,36 @@ const Cmd = ({cmd, imageDetail, editing, onChange, onEditing, disabled}) => {
                             </IconButton>
                         </>
                     ) : (
-                        <IconButton
-                            onClick={event => {
-                                event.preventDefault();
-                                onEditing(true);
-                            }}
-                            color="primary"
-                            aria-label="edit"
-                            disabled={disabled}
-                        >
-                            <EditIcon />
-                        </IconButton>
+                        <>
+                            <Tooltip title="Edit">
+                                <IconButton
+                                    onClick={event => {
+                                        event.preventDefault();
+                                        onEditing(true);
+                                    }}
+                                    color="primary"
+                                    aria-label="edit"
+                                    disabled={disabled}
+                                >
+                                    <EditIcon />
+                                </IconButton>
+                            </Tooltip>
+
+                            {cmd !== undefined && (
+                                <Tooltip title="Revert to default">
+                                    <IconButton
+                                        onClick={() => onChange(undefined)}
+                                        color="warning"
+                                        aria-label="reset"
+                                        disabled={disabled}
+                                        type="button"
+                                    >
+                                        <RestoreIcon />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
+                        </>
+
                     )}
                 </Stack>
             </Box>
@@ -99,11 +133,10 @@ const Cmd = ({cmd, imageDetail, editing, onChange, onEditing, disabled}) => {
     );
 };
 
-const WorkDir = ({workdir, imageDetail, editing, onChange, onEditing, disabled}) => {
+const WorkDir = ({workdir, workdirDefault, editing, onChange, onEditing, disabled}) => {
     const inputRef = useRef();
-    const defaultWorkDir = imageDetail.Config.WorkingDir;
 
-    const defaultVal = workdir || defaultWorkDir || '/';
+    const defaultVal = workdir || workdirDefault;
     const [val, setVal] = useState(defaultVal);
 
     const handleSubmit = (event) => {
@@ -112,15 +145,13 @@ const WorkDir = ({workdir, imageDetail, editing, onChange, onEditing, disabled})
         onEditing(false);
 
         let cbVal = val;
-        if (!defaultWorkDir && val === '/') {
-            cbVal = '';
-        } else if (defaultWorkDir && val === defaultWorkDir) {
-            cbVal = '';
+        if (val === workdirDefault) {
+            cbVal = undefined;
         }
 
-        // show default value instead of empty
-        if (!cbVal && cbVal !== defaultWorkDir) {
-            setVal(defaultWorkDir || '/')
+        if (!val) {
+            setVal(workdirDefault);
+            cbVal = undefined;
         }
         onChange(cbVal);
     };
@@ -147,7 +178,6 @@ const WorkDir = ({workdir, imageDetail, editing, onChange, onEditing, disabled})
                 disabled={!editing}
                 onChange={event => setVal(event.target.value)}
                 inputRef={inputRef}
-                helperText={editing ? 'Clear to return to default' : ''}
             />
 
             <Box>
@@ -171,17 +201,39 @@ const WorkDir = ({workdir, imageDetail, editing, onChange, onEditing, disabled})
                             </IconButton>
                         </>
                     ) : (
-                        <IconButton
-                            onClick={event => {
-                                event.preventDefault();
-                                onEditing(true);
-                            }}
-                            color="primary"
-                            aria-label="edit"
-                            disabled={disabled}
-                        >
-                            <EditIcon />
-                        </IconButton>
+                        <>
+                            <Tooltip title="Edit">
+                                <IconButton
+                                    onClick={event => {
+                                        event.preventDefault();
+                                        onEditing(true);
+                                    }}
+                                    color="primary"
+                                    aria-label="edit"
+                                    disabled={disabled}
+                                >
+                                    <EditIcon />
+                                </IconButton>
+                            </Tooltip>
+
+                            {workdir !== undefined && (
+                                <Tooltip title="Revert to default">
+                                    <IconButton
+                                        onClick={() => {
+                                            onChange(undefined);
+                                            setVal(workdirDefault);
+                                        }}
+                                        color="warning"
+                                        aria-label="reset"
+                                        disabled={disabled}
+                                        type="button"
+                                    >
+                                        <RestoreIcon />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
+                        </>
+
                     )}
                 </Stack>
             </Box>
@@ -190,12 +242,13 @@ const WorkDir = ({workdir, imageDetail, editing, onChange, onEditing, disabled})
     )
 }
 
-export default function CreateEntrypointCmd({cmd, workDir, imageDetail, onEdited, onConfirm}) {
+function CreateEntrypointCmd({cmd, workDir, imageDetail, onEdited, onConfirm}) {
     const [editCmd, setEditCmd] = useState(cmd);
     const [editWorkDir, setEditWorkDir] = useState(workDir);
 
     const [editing, setEditing] = useState([false, false]);
     const [version, setVersion] = useState(0);
+    const editedVal = useRef(false);
 
     const anyEditing = useMemo(() => {
         return editing.indexOf(true) !== -1;
@@ -232,7 +285,11 @@ export default function CreateEntrypointCmd({cmd, workDir, imageDetail, onEdited
     }, [cmd, editCmd, editWorkDir, workDir]);
 
     useEffect(() => {
-        onEdited(changed || anyEditing);
+        const v = changed || anyEditing;
+        if (v !== editedVal.current) {
+            onEdited(v);
+            editedVal.current = v;
+        }
     }, [anyEditing, changed, onEdited]);
 
     const handleCmdChange = v => {
@@ -265,7 +322,7 @@ export default function CreateEntrypointCmd({cmd, workDir, imageDetail, onEdited
 
             <Cmd
                 cmd={editCmd}
-                imageDetail={imageDetail}
+                cmdDefault={imageDetail.Config.Cmd || []}
                 editing={editing[0]}
                 onChange={handleCmdChange}
                 onEditing={v => handleEditing(0, v)}
@@ -274,6 +331,7 @@ export default function CreateEntrypointCmd({cmd, workDir, imageDetail, onEdited
 
             <WorkDir
                 workdir={editWorkDir}
+                workdirDefault={imageDetail.Config.WorkingDir || '/'}
                 imageDetail={imageDetail}
                 editing={editing[1]}
                 onChange={handleWorkDirChange}
@@ -303,5 +361,58 @@ export default function CreateEntrypointCmd({cmd, workDir, imageDetail, onEdited
             </Stack>
 
         </Stack>
+    );
+}
+
+export default function AccordionEntrypointCmd({open, disabled, edited, onExpandChange, version, imageDetail, onEdited, onConfirm, cmd, workDir}) {
+    return (
+        <Accordion
+            expanded={open}
+            onChange={onExpandChange}
+            disabled={disabled}
+        >
+            <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel2a-content"
+                id="panel2a-header"
+            >
+                <Typography sx={{ flexGrow: 1 }}>
+                    Entrypoint, Command, and WorkingDirectory
+                </Typography>
+                {edited[1] && open[1] && (
+                    <Typography sx={{color: orange[500]}}>
+                        Not saved yet
+                    </Typography>
+                )}
+                {!disabled[1] && !open[1] && (!!cmd || !!workDir) && (
+                    <Typography sx={{color: grey[500]}}>
+                        {!!cmd && (
+                            <>
+                                Command: {cmd}
+                            </>
+                        )}
+                        {!!cmd && !!workDir && ' '}
+                        {!!workDir && (
+                            <>
+                                WorkingDir: {workDir}
+                            </>
+                        )}
+                    </Typography>
+                )}
+            </AccordionSummary>
+            <AccordionDetails>
+                {/* avoid empty imageDetail */}
+                {imageDetail && (
+                    <CreateEntrypointCmd
+                        key={version[1]}
+                        cmd={cmd}
+                        workDir={workDir}
+                        imageDetail={imageDetail}
+                        onEdited={onEdited}
+                        onConfirm={onConfirm}
+                    />
+                )}
+            </AccordionDetails>
+        </Accordion>
     );
 }
