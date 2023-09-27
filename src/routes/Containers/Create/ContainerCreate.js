@@ -18,14 +18,15 @@ import AccordionPort from "./CreatePort";
 import dataModel from "../../../lib/dataModel";
 import {useNavigate} from "react-router-dom";
 import {enqueueSnackbar} from "notistack";
+import AccordionAdv from "./CreateAdv";
 
-const allFalse = [false, false, false, false, false];
-const allZero = [0, 0, 0, 0, 0];
+const allFalse = [false, false, false, false, false, false];
+const allZero = [0, 0, 0, 0, 0, 0];
 
 export default function ContainerCreate() {
     const navigate = useNavigate();
-    const [open, setOpen] = useState([true, false, false, false, false]);
-    const [disabled, setDisabled] = useState([false, true, true, true, true]);
+    const [open, setOpen] = useState([true, false, false, false, false, false]);
+    const [disabled, setDisabled] = useState([false, true, true, true, true, true]);
     const [edited, setEdited] = useState(allFalse);
 
     const [showDialogDiscard, setShowDialogDiscard] = useState(false);
@@ -40,6 +41,9 @@ export default function ContainerCreate() {
     const [envs, setEnvs] = useState([]);
     const [volumes, setVolumes] = useState([]);
     const [ports, setPorts] = useState([]);
+    const [adv, setAdv] = useState({
+        start: true
+    });
 
     const [errMsg, setErrMsg] = useState('');
     const [creating, setCreating] = useState(false);
@@ -172,6 +176,20 @@ export default function ContainerCreate() {
 
     const handleConfirmPort = useCallback(p => {
         setPorts(p);
+        setOnlyOneOpen(5);
+    }, [setOnlyOneOpen]);
+
+    // Adv
+    const handleOpenChangeAdv = useCallback((event, open) => {
+        handleExpandedChange(5, open);
+    }, [handleExpandedChange]);
+
+    const handleEditedAdv = useCallback(v => {
+        handleEdited(5, v);
+    }, [handleEdited]);
+
+    const handleConfirmAdv = useCallback(p => {
+        setAdv(p);
         setOnlyOneOpen(-1);
     }, [setOnlyOneOpen]);
 
@@ -248,7 +266,8 @@ export default function ContainerCreate() {
                     host: p.host,
                     protocol: p.protocol
                 };
-            })
+            }),
+            start: adv.start
         }, ac)
             .then(data => {
                 navigate('/containers');
@@ -373,6 +392,18 @@ export default function ContainerCreate() {
                 onEdited={handleEditedPort}
                 onConfirm={handleConfirmPort}
                 ports={ports}
+            />
+
+            <AccordionAdv
+                open={open[5]}
+                disabled={disabled[5]}
+                edited={edited[5]}
+                onExpandChange={handleOpenChangeAdv}
+                version={version[5]}
+                imageDetail={imageDetail}
+                onEdited={handleEditedAdv}
+                onConfirm={handleConfirmAdv}
+                adv={adv}
             />
 
 
