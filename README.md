@@ -67,6 +67,7 @@ There are some configurations that can be specified by environment variables.
 
 ```shell
 # version information showed in the app
+REACT_APP_CONTAINERUP_VERSION=dev
 REACT_APP_CONTAINERUP_BUILD=development_build
 REACT_APP_CONTAINERUP_COMMIT=0000000
 

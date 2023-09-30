@@ -38,6 +38,7 @@ jobs:
         id: build
         run: |
           COMMIT=$(git rev-parse --short HEAD)
+          export REACT_APP_CONTAINERUP_VERSION=${GIT_REF}
           export REACT_APP_CONTAINERUP_BUILD=${BUILD_NUM}
           export REACT_APP_CONTAINERUP_COMMIT=${COMMIT}
           echo REACT_APP_CONTAINERUP_BUILD=${BUILD_NUM}
@@ -45,6 +46,7 @@ jobs:
           echo "COMMIT=${COMMIT}" >> ${GITHUB_OUTPUT}
           npm run build
         env:
+          GIT_REF: ${{ inputs.git_ref }}
           BUILD_NUM: ${{ inputs.build_num }}
       - name: Upload artifact
         uses: actions/upload-artifact@v3

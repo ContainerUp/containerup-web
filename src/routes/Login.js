@@ -130,7 +130,7 @@ export default function Login() {
                 )}
 
                 <Typography sx={{mt: '15px', color: grey[400]}} variant="caption">
-                    Build {process.env.REACT_APP_CONTAINERUP_BUILD} Commit {process.env.REACT_APP_CONTAINERUP_COMMIT}
+                    Version {process.env.REACT_APP_CONTAINERUP_VERSION} Build {process.env.REACT_APP_CONTAINERUP_BUILD} Commit {process.env.REACT_APP_CONTAINERUP_COMMIT}
                 </Typography>
             </Container>
 
