@@ -21,6 +21,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import RestoreIcon from "@mui/icons-material/Restore";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Typography from "@mui/material/Typography";
+import {useDispatch, useSelector} from "react-redux";
+import {uiActions} from "./uiSlice";
+import {containerActions} from "./containerSlice";
 
 const checkContainerPort = str => {
     const p = parseInt(str);
@@ -502,7 +505,33 @@ function CreatePort({ports, imageDetail, onEdited, onConfirm}) {
     );
 }
 
-export default function AccordionPort({open, disabled, edited, onExpandChange, version, imageDetail, onEdited, onConfirm, ports}) {
+const accordionIndex = 4;
+
+export default function AccordionPort() {
+    const dispatch = useDispatch();
+
+    const open = useSelector(state => state.ui.open[accordionIndex]);
+    const disabled = useSelector(state => state.ui.disabled[accordionIndex]);
+    const edited = useSelector(state => state.ui.edited[accordionIndex]);
+    const imageDetail = useSelector(state => state.container.imageDetail);
+    const version = useSelector(state => state.ui.version[accordionIndex]);
+
+    const ports = useSelector(state => state.container.ports);
+
+    const onExpandChange = (event, open) => {
+        dispatch(uiActions.toggle(accordionIndex, open));
+    };
+
+    const onEdited = edited => {
+        dispatch(uiActions.setEdited(accordionIndex, edited));
+    };
+
+    const onConfirm = p => {
+        dispatch(containerActions.setPorts(p));
+
+        dispatch(uiActions.openNext(accordionIndex));
+    };
+
     return (
         <Accordion
             expanded={open}

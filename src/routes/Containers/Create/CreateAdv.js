@@ -1,7 +1,7 @@
 import {
     Accordion,
     AccordionDetails,
-    AccordionSummary, Button,
+    AccordionSummary, Box, Button,
     Checkbox,
     FormControlLabel,
     FormGroup,
@@ -11,8 +11,11 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Typography from "@mui/material/Typography";
 import {grey, orange} from "@mui/material/colors";
 import CheckIcon from "@mui/icons-material/Check";
-import RestoreIcon from "@mui/icons-material/Restore";
 import {useEffect, useMemo, useRef, useState} from "react";
+import {useDispatch, useSelector} from "react-redux";
+import {uiActions} from "./uiSlice";
+import {containerActions} from "./containerSlice";
+import RestoreIcon from "@mui/icons-material/Restore";
 
 function CreateAdv({adv, onEdited, onConfirm}) {
     const [editAdv, setEditAdv] = useState(adv);
@@ -23,6 +26,13 @@ function CreateAdv({adv, onEdited, onConfirm}) {
         setEditAdv({
             ...editAdv,
             start: event.target.checked
+        });
+    };
+
+    const handleChangeAlwaysRestart = event => {
+        setEditAdv({
+            ...editAdv,
+            alwaysRestart: event.target.checked
         });
     };
 
@@ -58,15 +68,27 @@ function CreateAdv({adv, onEdited, onConfirm}) {
 
     return (
         <Stack spacing={3} key={version}>
-            <FormGroup>
-                <FormControlLabel
-                    control={<Checkbox
-                        checked={editAdv.start}
-                        onChange={handleChangeStart}
-                    />}
-                    label="Start the container (default: yes)"
-                />
-            </FormGroup>
+            <Box sx={{maxWidth: 350}}>
+                <FormGroup>
+                    <FormControlLabel
+                        control={<Checkbox
+                            checked={editAdv.start}
+                            onChange={handleChangeStart}
+                        />}
+                        label="Start the container (default: yes)"
+                    />
+                </FormGroup>
+
+                <FormGroup>
+                    <FormControlLabel
+                        control={<Checkbox
+                            checked={editAdv.alwaysRestart}
+                            onChange={handleChangeAlwaysRestart}
+                        />}
+                        label="Restart policy: always (default: no)"
+                    />
+                </FormGroup>
+            </Box>
 
             <Stack direction="row" spacing={1}>
                 <Button
@@ -91,7 +113,41 @@ function CreateAdv({adv, onEdited, onConfirm}) {
     );
 }
 
-export default function AccordionAdv({open, disabled, edited, onExpandChange, version, imageDetail, onEdited, onConfirm, adv}) {
+const accordionIndex = 6;
+
+export default function AccordionAdv() {
+    const dispatch = useDispatch();
+
+    const open = useSelector(state => state.ui.open[accordionIndex]);
+    const disabled = useSelector(state => state.ui.disabled[accordionIndex]);
+    const edited = useSelector(state => state.ui.edited[accordionIndex]);
+    const version = useSelector(state => state.ui.version[accordionIndex]);
+
+    const adv = useSelector(state => state.container.adv);
+
+    const onExpandChange = (event, open) => {
+        dispatch(uiActions.toggle(accordionIndex, open));
+    };
+
+    const onEdited = edited => {
+        dispatch(uiActions.setEdited(accordionIndex, edited));
+    };
+
+    const onConfirm = p => {
+        dispatch(containerActions.setAdv(p));
+
+        dispatch(uiActions.openNext(accordionIndex));
+    };
+
+    const texts = [];
+    if (!adv.start) {
+        texts.push("Do not start");
+    }
+    if (adv.alwaysRestart) {
+        texts.push("Always restart");
+    }
+    const text = texts.join(", ");
+
     return (
         <Accordion
             expanded={open}
@@ -100,8 +156,8 @@ export default function AccordionAdv({open, disabled, edited, onExpandChange, ve
         >
             <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel6a-content"
-                id="panel6a-header"
+                aria-controls="panel7a-content"
+                id="panel7a-header"
             >
                 <Typography sx={{ flexGrow: 1 }}>
                     Advanced settings
@@ -111,22 +167,19 @@ export default function AccordionAdv({open, disabled, edited, onExpandChange, ve
                         Not saved yet
                     </Typography>
                 )}
-                {/*{!disabled && !open && ports.length > 0 && (*/}
-                {/*    <Typography sx={{color: grey[500]}}>*/}
-                {/*        {ports.length} port{ports.length > 1 && 's'}*/}
-                {/*    </Typography>*/}
-                {/*)}*/}
+                {!disabled && !open && text && (
+                    <Typography sx={{color: grey[500]}}>
+                        {text}
+                    </Typography>
+                )}
             </AccordionSummary>
             <AccordionDetails>
-                {/* avoid empty imageDetail */}
-                {imageDetail && (
-                    <CreateAdv
-                        key={version}
-                        adv={adv}
-                        onEdited={onEdited}
-                        onConfirm={onConfirm}
-                    />
-                )}
+                <CreateAdv
+                    key={version}
+                    adv={adv}
+                    onEdited={onEdited}
+                    onConfirm={onConfirm}
+                />
             </AccordionDetails>
         </Accordion>
     );

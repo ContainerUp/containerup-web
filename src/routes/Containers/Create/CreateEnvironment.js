@@ -11,6 +11,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreIcon from '@mui/icons-material/Restore';
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Typography from "@mui/material/Typography";
+import {useDispatch, useSelector} from "react-redux";
+import {uiActions} from "./uiSlice";
+import {containerActions} from "./containerSlice";
 
 const envRe = /^([a-zA-Z0-9_]+)=(.*)$/;
 const envNameRe = /^[a-zA-Z0-9_]+$/;
@@ -431,7 +434,33 @@ function CreateEnvironment({envs, imageDetail, onEdited, onConfirm}) {
     );
 }
 
-export default function AccordionEnvironment({open, disabled, edited, onExpandChange, version, imageDetail, onEdited, onConfirm, envs}) {
+const accordionIndex = 2;
+
+export default function AccordionEnvironment() {
+    const dispatch = useDispatch();
+
+    const open = useSelector(state => state.ui.open[accordionIndex]);
+    const disabled = useSelector(state => state.ui.disabled[accordionIndex]);
+    const edited = useSelector(state => state.ui.edited[accordionIndex]);
+    const imageDetail = useSelector(state => state.container.imageDetail);
+    const version = useSelector(state => state.ui.version[accordionIndex]);
+
+    const envs = useSelector(state => state.container.envs);
+
+    const onExpandChange = (event, open) => {
+        dispatch(uiActions.toggle(accordionIndex, open));
+    };
+
+    const onEdited = edited => {
+        dispatch(uiActions.setEdited(accordionIndex, edited));
+    };
+
+    const onConfirm = p => {
+        dispatch(containerActions.setEnvs(p));
+
+        dispatch(uiActions.openNext(accordionIndex));
+    };
+
     return (
         <Accordion
             expanded={open}

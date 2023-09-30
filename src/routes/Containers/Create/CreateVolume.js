@@ -21,6 +21,9 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import RestoreIcon from "@mui/icons-material/Restore";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Typography from "@mui/material/Typography";
+import {useDispatch, useSelector} from "react-redux";
+import {uiActions} from "./uiSlice";
+import {containerActions} from "./containerSlice";
 
 const Volume = ({volume, editing, onChange, onEditing, onDelete, disabled}) => {
     const inputRefContainer = useRef();
@@ -416,11 +419,37 @@ function CreateVolume({volumes, imageDetail, onEdited, onConfirm}) {
     );
 }
 
-export default function AccordionVolume({open, disabled, edited, onExpandChange, version, imageDetail, onEdited, onConfirm, volumes}) {
+const accordionIndex = 3;
+
+export default function AccordionVolume() {
+    const dispatch = useDispatch();
+
+    const open = useSelector(state => state.ui.open[accordionIndex]);
+    const disabled = useSelector(state => state.ui.disabled[accordionIndex]);
+    const edited = useSelector(state => state.ui.edited[accordionIndex]);
+    const imageDetail = useSelector(state => state.container.imageDetail);
+    const version = useSelector(state => state.ui.version[accordionIndex]);
+
+    const volumes = useSelector(state => state.container.volumes);
+
+    const handleChangeAccordion = (event, open) => {
+        dispatch(uiActions.toggle(accordionIndex, open));
+    };
+
+    const handleEdited = edited => {
+        dispatch(uiActions.setEdited(accordionIndex, edited));
+    };
+
+    const handleConfirm = p => {
+        dispatch(containerActions.setVolumes(p));
+
+        dispatch(uiActions.openNext(accordionIndex));
+    };
+
     return (
         <Accordion
             expanded={open}
-            onChange={onExpandChange}
+            onChange={handleChangeAccordion}
             disabled={disabled}
         >
             <AccordionSummary
@@ -449,8 +478,8 @@ export default function AccordionVolume({open, disabled, edited, onExpandChange,
                         key={version}
                         volumes={volumes}
                         imageDetail={imageDetail}
-                        onEdited={onEdited}
-                        onConfirm={onConfirm}
+                        onEdited={handleEdited}
+                        onConfirm={handleConfirm}
                     />
                 )}
             </AccordionDetails>

@@ -1,5 +1,8 @@
 import TextField from "@mui/material/TextField";
 import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
     Alert,
     Box,
     Button,
@@ -7,15 +10,21 @@ import {
     Stack
 } from "@mui/material";
 import {Autocomplete} from '@mui/material';
-import {useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import dataModel from "../../../lib/dataModel";
 import {useNavigate, useSearchParams} from "react-router-dom";
-import {grey} from "@mui/material/colors";
+import {grey, orange} from "@mui/material/colors";
 import ImagePullTerminal from "../../Images/List/ImagePullTerminal";
 import CreateImagePullActions from "./CreateImagePullActions";
 import Pipe from "../../../lib/Pipe";
 import CheckIcon from "@mui/icons-material/Check";
 import {demoImage} from "../../Images/List/ImagePullDialog";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Typography from "@mui/material/Typography";
+import {getImageNameFromInspection} from "../../../lib/imageUtil";
+import {useDispatch, useSelector} from "react-redux";
+import {uiActions} from "./uiSlice";
+import {containerActions} from "./containerSlice";
 
 const checkNameAndGetImage = (containerName, imageId, abortController) => {
     const p1 = dataModel.containerInspect(containerName, false, abortController)
@@ -84,7 +93,7 @@ const expandImages = images => {
     return ret;
 }
 
-export default function CreateNameImage({name, image, onConfirm, onEdited}) {
+function CreateNameImage({name, image, onConfirm, onEdited}) {
     const [searchParams] = useSearchParams();
 
     const navigate = useNavigate();
@@ -94,6 +103,7 @@ export default function CreateNameImage({name, image, onConfirm, onEdited}) {
     const [containerName, setContainerName] = useState(name);
     const [imageName, setImageName] = useState(image);
     const [imageOpt, setImageOpt] = useState(null);
+    const editedVal = useRef(false);
 
     const [pulling, setPulling] = useState(false);
     const pulledImageId = useRef('');
@@ -139,7 +149,10 @@ export default function CreateNameImage({name, image, onConfirm, onEdited}) {
 
     const checkIfEdited = () => {
         const changed = imageName !== image || containerName !== name;
-        onEdited(changed);
+        if (changed !== editedVal.current) {
+            onEdited(changed);
+            editedVal.current = changed;
+        }
     };
 
     const handleNameChange = event => {
@@ -295,7 +308,7 @@ export default function CreateNameImage({name, image, onConfirm, onEdited}) {
                     return;
                 }
                 setLoadingImageDetail(false);
-            })
+            });
 
         return () => ac.abort();
     }, [containerName, imageName, imageOpt, loadingImageDetail, navigate, onConfirm, onEdited]);
@@ -398,9 +411,11 @@ export default function CreateNameImage({name, image, onConfirm, onEdited}) {
                                 The image <b>{imageName}</b> is not found locally. <br />
                                 To continue, pull this image first. Pull the image now?
 
-                                <Alert severity="info">
-                                    As a limit of the demo server, please try this one: <b>{demoImage}</b>
-                                </Alert>
+                                {process.env.REACT_APP_CONTAINERUP_DEMO && (
+                                    <Alert severity="info">
+                                        As a limit of the demo server, please try this one: <b>{demoImage}</b>
+                                    </Alert>
+                                )}
                             </>
                         )}
                     </DialogContentText>
@@ -421,5 +436,70 @@ export default function CreateNameImage({name, image, onConfirm, onEdited}) {
             </Dialog>
 
         </Stack>
+    );
+}
+
+const accordionIndex = 0;
+
+export default function AccordionNameImage() {
+    const dispatch = useDispatch();
+
+    const open = useSelector(state => state.ui.open[accordionIndex]);
+    const disabled = useSelector(state => state.ui.disabled[accordionIndex]);
+    const edited = useSelector(state => state.ui.edited[accordionIndex]);
+    const imageDetail = useSelector(state => state.container.imageDetail);
+
+    const name = useSelector(state => state.container.name);
+
+    const handleChangeAccordion = (event, open) => {
+        dispatch(uiActions.toggle(accordionIndex, open, !!imageDetail));
+    };
+
+    const handleEdited = useCallback(edited => {
+        dispatch(uiActions.setEdited(accordionIndex, edited));
+    }, [dispatch]);
+
+    const handleConfirm = useCallback(p => {
+        dispatch(containerActions.setName(p.name));
+        dispatch(containerActions.setImageDetail(p.imageDetail));
+
+        dispatch(uiActions.enableAll());
+        dispatch(uiActions.openNext(accordionIndex));
+    }, [dispatch]);
+
+    return (
+        <Accordion
+            expanded={open}
+            onChange={handleChangeAccordion}
+            disabled={disabled}
+        >
+            <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel1a-content"
+                id="panel1a-header"
+            >
+                <Typography sx={{ flexGrow: 1 }}>
+                    Name & Image
+                </Typography>
+                {edited && open && (
+                    <Typography sx={{color: orange[500]}}>
+                        Not saved yet
+                    </Typography>
+                )}
+                {!disabled && !open && imageDetail && (
+                    <Typography sx={{color: grey[500]}}>
+                        {name}, {getImageNameFromInspection(imageDetail)}
+                    </Typography>
+                )}
+            </AccordionSummary>
+            <AccordionDetails>
+                <CreateNameImage
+                    name={name}
+                    image={getImageNameFromInspection(imageDetail)}
+                    onEdited={handleEdited}
+                    onConfirm={handleConfirm}
+                />
+            </AccordionDetails>
+        </Accordion>
     );
 }

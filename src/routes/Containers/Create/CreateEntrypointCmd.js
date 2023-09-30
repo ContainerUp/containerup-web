@@ -19,6 +19,9 @@ import RestoreIcon from '@mui/icons-material/Restore';
 import {green, grey, orange} from "@mui/material/colors";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Typography from "@mui/material/Typography";
+import {useDispatch, useSelector} from "react-redux";
+import {uiActions} from "./uiSlice";
+import {containerActions} from "./containerSlice";
 
 const Cmd = ({cmd, cmdDefault, editing, onChange, onEditing, disabled}) => {
     const inputRef = useRef();
@@ -364,7 +367,44 @@ function CreateEntrypointCmd({cmd, workDir, imageDetail, onEdited, onConfirm}) {
     );
 }
 
-export default function AccordionEntrypointCmd({open, disabled, edited, onExpandChange, version, imageDetail, onEdited, onConfirm, cmd, workDir}) {
+const accordionIndex = 1;
+
+export default function AccordionEntrypointCmd() {
+    const dispatch = useDispatch();
+
+    const open = useSelector(state => state.ui.open[accordionIndex]);
+    const disabled = useSelector(state => state.ui.disabled[accordionIndex]);
+    const edited = useSelector(state => state.ui.edited[accordionIndex]);
+    const imageDetail = useSelector(state => state.container.imageDetail);
+    const version = useSelector(state => state.ui.version[accordionIndex]);
+
+    const cmd = useSelector(state => state.container.cmd);
+    const workDir = useSelector(state => state.container.workDir);
+
+    const onExpandChange = (event, open) => {
+        dispatch(uiActions.toggle(accordionIndex, open));
+    };
+
+    const onEdited = edited => {
+        dispatch(uiActions.setEdited(accordionIndex, edited));
+    };
+
+    const onConfirm = p => {
+        dispatch(containerActions.setCmd(p.cmd));
+        dispatch(containerActions.setWorkDir(p.workDir));
+
+        dispatch(uiActions.openNext(accordionIndex));
+    };
+
+    const texts = [];
+    if (cmd) {
+        texts.push('Command: ' + cmd);
+    }
+    if (workDir) {
+        texts.push('WorkingDirectory: ' + workDir);
+    }
+    const text = texts.join(", ");
+
     return (
         <Accordion
             expanded={open}
@@ -379,24 +419,14 @@ export default function AccordionEntrypointCmd({open, disabled, edited, onExpand
                 <Typography sx={{ flexGrow: 1 }}>
                     Entrypoint, Command, and WorkingDirectory
                 </Typography>
-                {edited[1] && open[1] && (
+                {edited && open && (
                     <Typography sx={{color: orange[500]}}>
                         Not saved yet
                     </Typography>
                 )}
-                {!disabled[1] && !open[1] && (!!cmd || !!workDir) && (
+                {!disabled && !open && text && (
                     <Typography sx={{color: grey[500]}}>
-                        {!!cmd && (
-                            <>
-                                Command: {cmd}
-                            </>
-                        )}
-                        {!!cmd && !!workDir && ' '}
-                        {!!workDir && (
-                            <>
-                                WorkingDir: {workDir}
-                            </>
-                        )}
+                        {text}
                     </Typography>
                 )}
             </AccordionSummary>
@@ -404,7 +434,7 @@ export default function AccordionEntrypointCmd({open, disabled, edited, onExpand
                 {/* avoid empty imageDetail */}
                 {imageDetail && (
                     <CreateEntrypointCmd
-                        key={version[1]}
+                        key={version}
                         cmd={cmd}
                         workDir={workDir}
                         imageDetail={imageDetail}
