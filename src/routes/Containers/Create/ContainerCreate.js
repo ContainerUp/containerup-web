@@ -70,7 +70,7 @@ const CreateAction = () => {
             }),
             resources: res,
             start: adv.start,
-            restart: adv.restart
+            alwaysRestart: adv.alwaysRestart
         }, ac)
             .then(data => {
                 navigate('/containers');
