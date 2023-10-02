@@ -52,7 +52,6 @@ export default function ContainerDetail() {
         return [0, false];
     }, [pathname]);
 
-    const [value, setValue] = useState(tabVal);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -75,10 +74,6 @@ export default function ContainerDetail() {
     useEffect(() => {
         document.title = 'ContainerUp - Container ' + containerId;
     }, [containerId]);
-
-    const handleTabChange = (event, newValue) => {
-        setValue(newValue);
-    };
 
     useEffect(() => {
         const ctrl = getController('bar_button');
@@ -134,7 +129,7 @@ export default function ContainerDetail() {
             {tabValValid && (
                 <>
                     <Box sx={{ width: '100%', marginBottom: '16px' }}>
-                        <Tabs value={value} onChange={handleTabChange} aria-label="container tabs">
+                        <Tabs value={tabVal} aria-label="container tabs">
                             {tabs.map(t => (
                                 <Tab
                                     key={t.to}

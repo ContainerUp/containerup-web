@@ -18,7 +18,7 @@ import {uiActions} from "./uiSlice";
 import {containerActions} from "./containerSlice";
 import CheckIcon from "@mui/icons-material/Check";
 import AccordionResources from "./CreateResources";
-
+import {unstable_usePrompt as usePrompt} from "react-router-dom";
 
 const CreateAction = () => {
     const navigate = useNavigate();
@@ -29,6 +29,21 @@ const CreateAction = () => {
     const anyEdited = useSelector(state => {
         return state.ui.edited.indexOf(true) !== -1;
     });
+
+    usePrompt({
+        when: !!imageDetail,
+        message: 'You have unsaved data. Do you really want to leave?'
+    });
+    useEffect(() => {
+        function block(event) {
+            if (!!imageDetail) {
+                event.preventDefault();
+                return event.returnValue = "";
+            }
+        }
+        window.addEventListener('beforeunload', block);
+        return () => window.removeEventListener('beforeunload', block);
+    }, [imageDetail]);
 
     const handleCreate = () => {
         setCreating(true);
