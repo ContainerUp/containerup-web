@@ -23,13 +23,36 @@ import ContainerDetail from "./routes/Containers/ContainerDetail";
 import ContainerDetailOverview from "./routes/Containers/Overview/ContainerDetailOverview";
 import ContainerDetailInspect from "./routes/Containers/Inspect/ContainerDetailInspect";
 import ContainerLogs from "./routes/Containers/Logs/ContainerLogs";
-import ContainerDetailStatistics from "./routes/Containers/ContainerDetailStatistics";
+import ContainerDetailStatistics from "./routes/Containers/Stat/ContainerDetailStatistics";
 import ContainerExec from "./routes/Containers/Exec/ContainerExec";
 import ContainerDetailSettings from "./routes/Containers/ContainerDetailSettings";
 import SystemInfo from "./routes/System/SystemInfo";
 import ImageDetail from "./routes/Images/Detail/ImageDetail";
 import ContainerCreate from "./routes/Containers/Create/ContainerCreate";
 import Logout from "./routes/Logout";
+import {
+    Chart as ChartJS,
+    LinearScale,
+    TimeScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Filler,
+    Legend,
+} from 'chart.js';
+import 'chartjs-adapter-date-fns';
+
+ChartJS.register(
+    LinearScale,
+    TimeScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Filler,
+    Legend
+);
 
 const theme = createTheme({
     palette: {

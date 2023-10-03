@@ -18,11 +18,11 @@ const tabs = [{
 }, {
     to: "exec",
     label: "Exec"
+}, {
+    to: "statistics",
+    label: "Statistics"
 },
-//     {
-//     to: "statistics",
-//     label: "Statistics"
-// }, {
+// {
 //     to: "settings",
 //     label: "Settings"
 // }
