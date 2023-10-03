@@ -49,8 +49,8 @@ export default function ContainersTable({loading, errMsg, containersData}) {
     }, [containersData]);
 
     return (
-        <TableContainer component={Paper}>
-            <Table stickyHeader sx={{ minWidth: 650 }} aria-label="containers table">
+        <TableContainer component={Paper} sx={{maxHeight: "calc(100vh - 96px)"}}>
+            <Table stickyHeader aria-label="containers table">
                 <TableHead>
                     <TableRow>
                         <TableCell>Container ID</TableCell>
