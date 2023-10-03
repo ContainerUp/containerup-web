@@ -15,6 +15,7 @@ import AppBarButtons from "./AppBarButtons";
 import AppBarBreadcrumb from "./AppBarBreadcrumb";
 import {SnackbarProvider} from "notistack";
 import {useGA4} from "../lib/ga4";
+import LaunchIcon from "@mui/icons-material/Launch";
 
 export default function Root() {
     useGA4();
@@ -69,6 +70,12 @@ export default function Root() {
                             drawerOpen={drawerOpen}
                             icon={<InfoIcon />}
                             path='/info'
+                        />
+                        <MyDrawerItem
+                            text="Get ContainerUp!"
+                            drawerOpen={drawerOpen}
+                            icon={<LaunchIcon />}
+                            href='https://containerup.org/'
                         />
                         <MyDrawerItem
                             text="Logout"
