@@ -45,9 +45,10 @@ export default function ContainerStatus({state, exitCode, exitAt, startedAt}) {
             return (
                 <Box sx={{color: green[500]}} key={version}>
                     <Tooltip title={startDate.toLocaleString()}>
-                        <span>
-                            Up {startAgo}
-                        </span>
+                        <div style={{display: 'flex', flexWrap: 'wrap'}}>
+                            <div>Up&nbsp;</div>
+                            <div>{startAgo}</div>
+                        </div>
                     </Tooltip>
                 </Box>
             );
@@ -56,9 +57,10 @@ export default function ContainerStatus({state, exitCode, exitAt, startedAt}) {
             return (
                 <Box sx={{color: red[500]}} key={version}>
                     <Tooltip title={exitDate.toLocaleString()}>
-                        <span>
-                            Exited ({exitCode}) {exitAgo}
-                        </span>
+                        <div style={{display: 'flex', flexWrap: 'wrap'}}>
+                            <div>Exited ({exitCode})&nbsp;</div>
+                            <div>{exitAgo}</div>
+                        </div>
                     </Tooltip>
                 </Box>
             );

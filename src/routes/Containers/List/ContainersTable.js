@@ -3,7 +3,7 @@ import {
     Paper, Stack,
     Table,
     TableBody,
-    TableCell,
+    TableCell as MuiTableCell,
     TableContainer,
     TableHead,
     TableRow
@@ -17,6 +17,19 @@ import ContainerStatus from "../ContainerStatus";
 import {useMemo} from "react";
 import ContainerActions from "./ContainerActions";
 import CreatedAt from "../../../components/CreatedAt";
+import {styled} from "@mui/material/styles";
+
+export const TableCell = styled(MuiTableCell)(({theme}) => ({
+    [theme.breakpoints.down('xl')]: {
+        padding: 12
+    },
+    [theme.breakpoints.down('lg')]: {
+        padding: 6
+    },
+    [theme.breakpoints.down('md')]: {
+        padding: 3
+    }
+}));
 
 export default function ContainersTable({loading, errMsg, containersData}) {
     const cd = useMemo(() => {
@@ -30,7 +43,12 @@ export default function ContainersTable({loading, errMsg, containersData}) {
                     if (p.host_ip) {
                         ip = p.host_ip
                     }
-                    c.ports.push(`${ip}:${p.host_port}=>${p.container_port}/${p.protocol}`);
+                    c.ports.push({
+                        ip,
+                        host_port: p.host_port,
+                        container_port: p.container_port,
+                        protocol: p.protocol
+                    });
                 });
             }
 
@@ -95,8 +113,9 @@ export default function ContainersTable({loading, errMsg, containersData}) {
                             <TableCell>
                                 <Stack>
                                     {c.ports.map((p, i) => (
-                                        <Box key={i}>
-                                            {p}
+                                        <Box key={i} sx={{display: 'flex', flexWrap: 'wrap'}}>
+                                            <div>{p.ip}:{p.host_port}</div>
+                                            <div>->{p.container_port}/{p.protocol}</div>
                                         </Box>
                                     ))}
                                 </Stack>

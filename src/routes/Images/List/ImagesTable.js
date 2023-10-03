@@ -16,6 +16,7 @@ import {useMemo} from "react";
 import sizeUtil from "../../../lib/sizeUtil";
 import ImageActions from "./ImageActions";
 import CreatedAt from "../../../components/CreatedAt";
+import ImageRepo from "./ImageRepo";
 
 export default function ImagesTable({loading, errMsg, imagesData}) {
     const imgd = useMemo(() => {
@@ -101,7 +102,7 @@ export default function ImagesTable({loading, errMsg, imagesData}) {
                             </TableCell>
 
                             <TableCell>
-                                {img.repo}
+                                <ImageRepo repo={img.repo} />
                             </TableCell>
 
                             <TableCell>

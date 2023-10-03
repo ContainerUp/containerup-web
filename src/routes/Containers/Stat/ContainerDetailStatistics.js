@@ -2,38 +2,50 @@ import {useEffect, useRef} from "react";
 import {aioProvider} from "../../../lib/dataProvidor";
 import {useParams} from "react-router-dom";
 import {Line} from "react-chartjs-2";
-import {Box, Stack} from "@mui/material";
+import {Box} from "@mui/material";
 import {enqueueSnackbar} from "notistack";
+import {styled} from "@mui/material/styles";
 
-const makeOptions = (title, stepSize) => ({
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-        x: {
-            type: 'time',
-            display: false
-        },
-        y: {
-            type: 'linear',
-            beginAtZero: true,
-            ticks: {
-                stepSize
+const makeOptions = (title, options) => {
+    const opt = {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            x: {
+                type: 'time',
+                display: false
+            },
+            y: {
+                type: 'linear',
+                beginAtZero: true
             }
+        },
+        interaction: {
+            mode: 'x',
+            intersect: false
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            title: {
+                display: true,
+                text: title,
+            },
         }
-    },
-    interaction: {
-        mode: 'x'
-    },
-    plugins: {
-        legend: {
-            display: false
-        },
-        title: {
-            display: true,
-            text: title,
-        },
+    };
+
+    if (options) {
+        if (options.stepSize) {
+            opt.scales.y.ticks = {stepSize: options.stepSize}
+        }
+        if (options.suggestedMax) {
+            opt.scales.y.suggestedMax = options.suggestedMax;
+        }
     }
-});
+
+    return opt;
+};
 
 const makeData = () => ({
     datasets: [{
@@ -49,14 +61,26 @@ const makeDataInOut = ([l1, l2]) => ({
         label: l1,
         fill: false,
         data: [],
-        borderColor: 'rgb(53, 162, 235)'
+        borderColor: 'rgb(53, 162, 235)',
+        backgroundColor: 'rgba(53, 162, 235, 0.5)',
     }, {
         label: l2,
         fill: false,
         data: [],
-        borderColor: 'rgb(255, 99, 132)'
+        borderColor: 'rgb(255, 99, 132)',
+        backgroundColor: 'rgba(255, 99, 132, 0.5)',
     }]
 });
+
+const ChartWrapper = styled(Box)(({theme}) => ({
+    height: 250,
+    width: '50%',
+    padding: 20,
+    [theme.breakpoints.down('md')]: {
+        width: '99%',
+        maxWidth: '450px'
+    }
+}));
 
 export default function ContainerDetailStatistics() {
     const {containerId} = useParams();
@@ -132,24 +156,36 @@ export default function ContainerDetailStatistics() {
     }, [containerId]);
 
     return (
-        <Stack spacing={5}>
-            <Stack direction="row" spacing={5} sx={{height: 250}}>
-                <Box sx={{width: 400}}>
-                    <Line ref={chartCpuRef} options={makeOptions('CPU %', 0.1)} data={makeData()} />
-                </Box>
-                <Box sx={{width: 400}}>
-                    <Line ref={chartMemRef} options={makeOptions('Memory MB', 0.5)} data={makeData()} />
-                </Box>
-            </Stack>
+        <Box sx={{display: 'flex', maxWidth: 1200, flexWrap: 'wrap'}}>
+            <ChartWrapper>
+                <Line
+                    ref={chartCpuRef}
+                    options={makeOptions('CPU %', {suggestedMax: 1})}
+                    data={makeData()}
+                />
+            </ChartWrapper>
+            <ChartWrapper>
+                <Line
+                    ref={chartMemRef}
+                    options={makeOptions('Memory MB', {suggestedMax: 32})}
+                    data={makeData()}
+                />
+            </ChartWrapper>
 
-            <Stack direction="row" spacing={5} sx={{height: 250}}>
-                <Box sx={{width: 400}}>
-                    <Line ref={chartNetRef} options={makeOptions('Network MB/s', 0.5)} data={makeDataInOut(["In", "Out"])} />
-                </Box>
-                <Box sx={{width: 400}}>
-                    <Line ref={chartBlockRef} options={makeOptions('Block IO MB/s', 0.5)} data={makeDataInOut(["Read", "Write"])} />
-                </Box>
-            </Stack>
-        </Stack>
+            <ChartWrapper>
+                <Line
+                    ref={chartNetRef}
+                    options={makeOptions('Network MB/s', {suggestedMax: 0.1})}
+                    data={makeDataInOut(["In", "Out"])}
+                />
+            </ChartWrapper>
+            <ChartWrapper>
+                <Line
+                    ref={chartBlockRef}
+                    options={makeOptions('Block IO MB/s', {suggestedMax: 0.1})}
+                    data={makeDataInOut(["Read", "Write"])}
+                />
+            </ChartWrapper>
+        </Box>
     );
 }

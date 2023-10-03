@@ -25,22 +25,28 @@ const AppBar = styled(MuiAppBar, {
     }),
 }));
 
+const OpenButton = styled(IconButton)(({theme}) => ({
+    marginRight: 40,
+    [theme.breakpoints.down('md')]: {
+        marginRight: 5
+    }
+}));
+
 export default function MyAppBar({drawerOpen, onOpen, children}) {
     return (
         <AppBar position="fixed" open={drawerOpen}>
             <Toolbar>
-                <IconButton
+                <OpenButton
                     color="inherit"
                     aria-label="open drawer"
                     onClick={onOpen}
                     edge="start"
                     sx={{
-                        marginRight: 5,
                         ...(drawerOpen && { display: 'none' }),
                     }}
                 >
                     <MenuIcon />
-                </IconButton>
+                </OpenButton>
                 {children}
             </Toolbar>
         </AppBar>

@@ -3,6 +3,13 @@ import {getController} from "../lib/HostGuestController";
 import {useEffect, useState} from "react";
 import Link from "@mui/material/Link";
 import {Link as RouterLink} from "react-router-dom";
+import {styled} from "@mui/material/styles";
+
+const AppName = styled(Link)(({theme}) => ({
+    [theme.breakpoints.down('md')]: {
+        fontSize: '16px'
+    }
+}));
 
 export default function AppBarBreadcrumb() {
     const [children, setChildren] = useState([]);
@@ -38,9 +45,9 @@ export default function AppBarBreadcrumb() {
             sx={{ flexGrow: 1 }}
             color="inherit"
         >
-            <Link underline="hover" color="inherit" to="/" component={RouterLink}>
+            <AppName underline="hover" color="inherit" to="/" component={RouterLink}>
                 ContainerUp
-            </Link>
+            </AppName>
             {linkItems.map((c, i) => (
                 <Link
                     key={i}

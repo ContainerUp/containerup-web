@@ -1,4 +1,5 @@
 import {
+    Box,
     Menu,
     MenuItem,
     Tooltip
@@ -20,6 +21,27 @@ import ListItemText from "@mui/material/ListItemText";
 import ContainerDialogCommit from "./ContainerDialogCommit";
 import ContainerDialogRemove from "./ContainerDialogRemove";
 import {enqueueSnackbar} from "notistack";
+import {styled} from "@mui/material/styles";
+
+const BoxWrapper = styled(Box)(({theme}) => ({
+    [theme.breakpoints.up('lg')]: {
+        minWidth: '200px'
+    }
+}));
+
+const HideWrapper = styled(Box)(({theme}) => ({
+    display: 'inline',
+    [theme.breakpoints.down('lg')]: {
+        display: 'none'
+    }
+}));
+
+const ShowMenuItem = styled(MenuItem)(({theme}) => ({
+    display: 'none',
+    [theme.breakpoints.down('lg')]: {
+        display: 'flex'
+    }
+}));
 
 export default function ContainerActions({c}) {
     const navigate = useNavigate();
@@ -38,6 +60,7 @@ export default function ContainerActions({c}) {
         switch (action) {
             case 'start': {
                 return () => {
+                    setMenuAnchorEl(null);
                     setActionType('start');
                     setActionTarget(c);
                     setActioning(true);
@@ -46,6 +69,7 @@ export default function ContainerActions({c}) {
 
             case 'stop': {
                 return () => {
+                    setMenuAnchorEl(null);
                     setActionType('stop');
                     setActionTarget(c);
                     setActioning(true);
@@ -146,7 +170,7 @@ export default function ContainerActions({c}) {
     }, []);
 
     return (
-        <>
+        <BoxWrapper>
             <ContainerDialogRemove
                 containerName={c.Names[0]}
                 containerIdShort={c.idShort}
@@ -163,88 +187,91 @@ export default function ContainerActions({c}) {
                 onClose={handleDialogCommitClose}
             />
 
-            {canStart ? (
-                <Tooltip title="Start">
-                    <IconButton
-                        aria-label="start"
-                        sx={{color: green[500]}}
-                        onClick={handleClickAction(c, 'start')}
-                    >
-                        <PlayArrowIcon />
-                    </IconButton>
-                </Tooltip>
-            ) : (
-                <Tooltip title="Start">
-                    <span>
+            <HideWrapper>
+                {canStart ? (
+                    <Tooltip title="Start">
                         <IconButton
                             aria-label="start"
                             sx={{color: green[500]}}
-                            disabled
+                            onClick={handleClickAction(c, 'start')}
                         >
                             <PlayArrowIcon />
                         </IconButton>
-                    </span>
-                </Tooltip>
-            )}
+                    </Tooltip>
+                ) : (
+                    <Tooltip title="Start">
+                        <span>
+                            <IconButton
+                                aria-label="start"
+                                sx={{color: green[500]}}
+                                disabled
+                            >
+                                <PlayArrowIcon />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+                )}
 
-            {canStop ? (
-                <Tooltip title="Stop">
-                    <IconButton
-                        aria-label="stop"
-                        sx={{color: red[900]}}
-                        onClick={handleClickAction(c, 'stop')}
-                    >
-                        <StopIcon />
-                    </IconButton>
-                </Tooltip>
-            ) : (
-                <Tooltip title="Stop">
-                    <span>
+                {canStop ? (
+                    <Tooltip title="Stop">
                         <IconButton
                             aria-label="stop"
                             sx={{color: red[900]}}
-                            disabled
+                            onClick={handleClickAction(c, 'stop')}
                         >
                             <StopIcon />
                         </IconButton>
-                    </span>
-                </Tooltip>
-            )}
+                    </Tooltip>
+                ) : (
+                    <Tooltip title="Stop">
+                        <span>
+                            <IconButton
+                                aria-label="stop"
+                                sx={{color: red[900]}}
+                                disabled
+                            >
+                                <StopIcon />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+                )}
 
-            <Tooltip title="Logs">
-                <IconButton
-                    aria-label="logs"
-                    sx={{color: blue[300]}}
-                    component={RouterLink} to={c.idShort + '/logs'}
-                >
-                    <SubjectIcon />
-                </IconButton>
-            </Tooltip>
-
-            {canExec ? (
-                <Tooltip title="Exec">
+                <Tooltip title="Logs">
                     <IconButton
-                        aria-label="exec"
-                        sx={{color: grey[800]}}
+                        aria-label="logs"
+                        sx={{color: blue[300]}}
                         component={RouterLink}
-                        to={c.idShort + '/exec'}
+                        to={c.idShort + '/logs'}
                     >
-                        <TerminalIcon />
+                        <SubjectIcon />
                     </IconButton>
                 </Tooltip>
-            ) : (
-                <Tooltip title="Exec">
-                    <span>
+
+                {canExec ? (
+                    <Tooltip title="Exec">
                         <IconButton
                             aria-label="exec"
                             sx={{color: grey[800]}}
-                            disabled
+                            component={RouterLink}
+                            to={c.idShort + '/exec'}
                         >
                             <TerminalIcon />
                         </IconButton>
-                    </span>
-                </Tooltip>
-            )}
+                    </Tooltip>
+                ) : (
+                    <Tooltip title="Exec">
+                        <span>
+                            <IconButton
+                                aria-label="exec"
+                                sx={{color: grey[800]}}
+                                disabled
+                            >
+                                <TerminalIcon />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+                )}
+            </HideWrapper>
 
             <Tooltip title="More actions">
                 <IconButton
@@ -263,6 +290,55 @@ export default function ContainerActions({c}) {
                     'aria-labelledby': 'basic-button',
                 }}
             >
+                <ShowMenuItem
+                    disabled={!canStart}
+                    onClick={handleClickAction(c, 'start')}
+                >
+                    <ListItemIcon sx={{color: green[500]}}>
+                        <PlayArrowIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>
+                        Start
+                    </ListItemText>
+                </ShowMenuItem>
+
+                <ShowMenuItem
+                    disabled={!canStop}
+                    onClick={handleClickAction(c, 'stop')}
+                >
+                    <ListItemIcon sx={{color: red[900]}}>
+                        <StopIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>
+                        Stop
+                    </ListItemText>
+                </ShowMenuItem>
+
+                <ShowMenuItem
+                    component={RouterLink}
+                    to={c.idShort + '/logs'}
+                >
+                    <ListItemIcon sx={{color: blue[300]}}>
+                        <SubjectIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>
+                        Logs
+                    </ListItemText>
+                </ShowMenuItem>
+
+                <ShowMenuItem
+                    disabled={!canExec}
+                    component={RouterLink}
+                    to={c.idShort + '/exec'}
+                >
+                    <ListItemIcon sx={{color: grey[800]}}>
+                        <TerminalIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>
+                        Exec
+                    </ListItemText>
+                </ShowMenuItem>
+
                 <MenuItem
                     disabled={!canDelete}
                     onClick={handleClickAction(c, 'commit')}
@@ -288,6 +364,6 @@ export default function ContainerActions({c}) {
                 </MenuItem>
 
             </Menu>
-        </>
+        </BoxWrapper>
     );
 }
