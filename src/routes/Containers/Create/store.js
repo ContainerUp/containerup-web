@@ -135,7 +135,7 @@ export const uiActions = {
         });
     },
     openNext: index => {
-        store.setState(state => {
+        store.setState(() => {
             let idxToOpen = index + 1;
             if (idxToOpen >= total) {
                 idxToOpen = -1;
@@ -154,7 +154,7 @@ export const uiActions = {
         }));
     },
     closeDialog: () => {
-        store.setState(state => ({showDialogDiscard: false}));
+        store.setState(() => ({showDialogDiscard: false}));
     },
     confirmDiscard: () => {
         store.setState(produce(state => {
