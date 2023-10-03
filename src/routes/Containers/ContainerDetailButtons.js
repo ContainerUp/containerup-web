@@ -193,7 +193,7 @@ export default function ContainerDetailButtons() {
     }, [actioning, container, navigate, pathname, action]);
 
     const handleDialogCommitClose = useCallback(() => {
-        setDialogCommitOpen(false)
+        setDialogCommitOpen(false);
     }, []);
 
     const st = getStatusText(container);

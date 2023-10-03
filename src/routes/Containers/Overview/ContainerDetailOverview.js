@@ -93,7 +93,7 @@ const dataKeys = [
                             ip = h.HostIp;
                         }
                         ports.push(`${ip}:${h.HostPort}->${key}`);
-                    })
+                    });
                 });
             }
             return (
@@ -156,7 +156,7 @@ const populateTableData = (resp, loading) => {
 export default function ContainerDetailOverview() {
     const {container, loading, errMsg} = useOutletContext();
     const tableData = useMemo(() => {
-        return populateTableData(container, loading)
+        return populateTableData(container, loading);
     }, [container, loading]);
 
     return (

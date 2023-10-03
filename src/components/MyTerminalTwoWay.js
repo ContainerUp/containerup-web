@@ -16,20 +16,20 @@ export default function MyTerminalTwoWay({dataSide}) {
         const xterm = new Terminal({
             fontSize: 13
         });
-        const fitAddon = new FitAddon()
+        const fitAddon = new FitAddon();
         xterm.loadAddon(fitAddon);
         xterm.open(ref.current);
         fitAddon.fit();
 
         const reportSize = ({cols, rows}) => {
-            dsWriter({type: 'resize', data: {cols, rows}})
+            dsWriter({type: 'resize', data: {cols, rows}});
         };
 
         dsOnReceive(data => {
             switch (data.type) {
                 case 'data': {
-                    xterm.write(data.data)
-                    break
+                    xterm.write(data.data);
+                    break;
                 }
                 case 'start': {
                     reportSize({cols: xterm.cols, rows: xterm.rows});

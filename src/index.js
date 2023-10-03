@@ -15,8 +15,8 @@ import './index.css';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import {purple} from "@mui/material/colors";
 
-import Root from './routes/Root'
-import Login from './routes/Login'
+import Root from './routes/Root';
+import Login from './routes/Login';
 import ContainersList from "./routes/Containers/List/ContainersList";
 import ImageList from "./routes/Images/List/ImageList";
 import ContainerDetail from "./routes/Containers/ContainerDetail";

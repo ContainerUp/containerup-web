@@ -37,7 +37,7 @@ export default function ImageDialogTag({open, imageIdShort, onClose}) {
         }
         setSubmitTimes(0);
         setActioning(true);
-    }
+    };
 
     useEffect(() => {
         if (!actioning) {
@@ -105,7 +105,7 @@ export default function ImageDialogTag({open, imageIdShort, onClose}) {
                     fullWidth
                     size="small"
                     value={tag}
-                    onChange={event => {setTag(event.target.value)}}
+                    onChange={event => setTag(event.target.value)}
                     sx={{marginTop: '12px'}}
                     onKeyDown={e => {
                         if (e.key === 'Enter') {

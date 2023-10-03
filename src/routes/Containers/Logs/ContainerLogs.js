@@ -22,7 +22,7 @@ export default function ContainerLogs() {
 
     const handleRefresh = opts => {
         setLogOpts(opts);
-    }
+    };
 
     return (
         <>

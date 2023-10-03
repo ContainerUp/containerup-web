@@ -5,7 +5,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import StopIcon from '@mui/icons-material/Stop';
 
 export default function ContainerLogsSettings({logOpts, onRefresh, wsTerminationOnReceive, stopActionWriter}) {
-    const [followChecked, setFollowChecked] = useState(logOpts.follow)
+    const [followChecked, setFollowChecked] = useState(logOpts.follow);
     const [tailChecked, setTailChecked] = useState(logOpts.tail);
     const [tailNum, setTailNum] = useState(logOpts.tailNum);
     const [live, setLive] = useState(true);
@@ -16,15 +16,15 @@ export default function ContainerLogsSettings({logOpts, onRefresh, wsTermination
 
     const handleFollowCheck = event => {
         setFollowChecked(event.target.checked);
-    }
+    };
 
     const handleTailCheck = event => {
         setTailChecked(event.target.checked);
-    }
+    };
 
     const handleNumChange = event => {
         setTailNum(event.target.value);
-    }
+    };
 
     const handleRefreshClick = () => {
         setLive(true);
@@ -35,13 +35,13 @@ export default function ContainerLogsSettings({logOpts, onRefresh, wsTermination
                 tailNum: tailNum
             });
         }
-    }
+    };
 
     const handleStopClick = () => {
         if (stopActionWriter) {
             stopActionWriter();
         }
-    }
+    };
 
     return (
         <Stack

@@ -34,13 +34,13 @@ export default function ImageDetail() {
                 if (error.response) {
                     e = error.response.data;
                 }
-                setErrMsg(e)
+                setErrMsg(e);
             })
             .finally(() => setLoading(false));
     }, [navigate, imageId]);
 
     useEffect(() => {
-        const ac = new AbortController()
+        const ac = new AbortController();
         loadInspectData(ac);
         return () => ac.abort();
     }, [loadInspectData]);

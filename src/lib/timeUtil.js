@@ -46,15 +46,15 @@ const dateAgo = d => {
     }
 
     return [Math.floor(delta / 3600 / 24 / 365) +  ' years ago', 3600 * 24];
-}
+};
 
 const parseRFC3339Nano = str => {
     return parse(str, `yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSXXX`, new Date());
-}
+};
 
 const timeUtil = {
     dateAgo,
     parseRFC3339Nano
-}
+};
 
 export default timeUtil;

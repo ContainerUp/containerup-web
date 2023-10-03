@@ -77,7 +77,7 @@ const Env = ({env, editing, onChange, onEditing, onDelete, disabled}) => {
         };
         setEditEnv(newEnv);
         onChange(newEnv);
-    }
+    };
 
     useEffect(() => {
         if (editing) {
@@ -209,7 +209,7 @@ const Env = ({env, editing, onChange, onEditing, onDelete, disabled}) => {
 
         </Stack>
     );
-}
+};
 
 function CreateEnvironment({envs, imageDetail, onEdited, onConfirm}) {
     const [editEnvs, setEditEnvs] = useState(envs);
@@ -228,7 +228,7 @@ function CreateEnvironment({envs, imageDetail, onEdited, onConfirm}) {
                 if (map[name] === undefined) {
                     total += 1;
                 }
-            })
+            });
         }
         return [...Array(total)].map(() => false);
     };
@@ -333,7 +333,7 @@ function CreateEnvironment({envs, imageDetail, onEdited, onConfirm}) {
         setEditing(editing.filter((v, idx) => {
             return idx !== i;
         }));
-    }
+    };
 
     const handleConfirm = () => {
         onConfirm(editEnvs);
@@ -378,7 +378,7 @@ function CreateEnvironment({envs, imageDetail, onEdited, onConfirm}) {
             value: ''
         }]);
         setEditing([...editing, true]);
-    }
+    };
 
     return (
         <Stack spacing={2} key={version}>

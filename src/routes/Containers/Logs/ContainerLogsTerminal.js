@@ -27,7 +27,7 @@ export default function ContainerLogsTerminal({containerId, logOpts, wsTerminati
         let terminalCloser = () => {
             cancel = true;
             cancelFunc();
-        }
+        };
 
         promise.then(handle => {
             // console.log("Log open...")

@@ -20,7 +20,7 @@ export default function ImagePullDialog({open, onClose}) {
         onClose(done.current);
         setImageName('');
         setPulling(false);
-    }
+    };
 
     const handleDialogForceClose = () => {
         if (pulling && !done.current) {
@@ -31,7 +31,7 @@ export default function ImagePullDialog({open, onClose}) {
 
     const handleDialogConfirm = () => {
         setPulling(true);
-    }
+    };
 
     const handlePullFinish = success => {
         if (success) {
@@ -73,7 +73,7 @@ export default function ImagePullDialog({open, onClose}) {
                                 fullWidth
                                 size="small"
                                 value={imageName}
-                                onChange={event => {setImageName(event.target.value)}}
+                                onChange={event => setImageName(event.target.value)}
                                 sx={{marginTop: '12px'}}
                                 onKeyDown={e => {
                                     if (e.key === 'Enter') {

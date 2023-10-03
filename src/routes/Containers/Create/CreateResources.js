@@ -138,7 +138,7 @@ function CreateResources({res, onEdited, onConfirm}) {
 
     const invalid = useMemo(() => {
         return valid.indexOf(false) !== -1;
-    }, [valid])
+    }, [valid]);
 
     return (
         <Stack spacing={3} key={version}>

@@ -12,7 +12,7 @@ import {showWebsocketDisconnectError} from "../../../components/WebsocketDisconn
 import ContainerUpLearnMore from "../../../components/ContainerUpLearnMore";
 
 export default function ImageList() {
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(true);
     const [errMsg, setErrMsg] = useState('');
     const navigate = useNavigate();
     const [images, setImages] = useState([]);

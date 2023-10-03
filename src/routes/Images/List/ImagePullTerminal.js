@@ -22,7 +22,7 @@ export default function ImagePullTerminal({image, onFinish}) {
         let terminalCloser = () => {
             cancel = true;
             cancelFunc();
-        }
+        };
 
         promise.then(handle => {
             xtWriter({type: 'data', data: term.reset});
@@ -31,17 +31,17 @@ export default function ImagePullTerminal({image, onFinish}) {
                 switch (d[0]) {
                     case "0": {
                         xtWriter({type: 'data', data: d.substring(1).replaceAll('\n', '\r\n')});
-                        break
+                        break;
                     }
                     case "e": {
                         const reason = d.substring(1).replaceAll('\n', '\r\n');
                         xtWriter({type: 'data', data: term.red(`Error occurred: ${reason}.`)});
                         terminated = true;
-                        break
+                        break;
                     }
                     case "s": {
                         pulledImageId = d.substring(1);
-                        break
+                        break;
                     }
                     default: {
                         console.log('unknown data', d);
@@ -59,7 +59,7 @@ export default function ImagePullTerminal({image, onFinish}) {
                 if (!terminated) {
                     if (code === 1000) {
                         xtWriter({type: 'data', data: term.green('Image pulled successfully.')});
-                        onFinish(true, pulledImageId)
+                        onFinish(true, pulledImageId);
                     } else {
                         xtWriter({type: 'data', data: term.red(`Error occurred: ${reason}.`)});
                         onFinish(false);

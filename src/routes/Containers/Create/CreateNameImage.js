@@ -43,7 +43,7 @@ const checkNameAndGetImage = (containerName, imageId, abortController) => {
                 errStr = error.response.data;
             }
             throw new Error('Cannot get image: ' + errStr);
-        })
+        });
 
     return Promise.all([p1, p2])
         .then(([, v2]) => {
@@ -85,11 +85,11 @@ const expandImages = images => {
                 tag: '<none>',
                 nameOrId: idShort,
                 idShort: idShort
-            })
+            });
         }
     }
     return ret;
-}
+};
 
 function CreateNameImage({name, image, onConfirm, onEdited}) {
     const [searchParams] = useSearchParams();
@@ -143,7 +143,7 @@ function CreateNameImage({name, image, onConfirm, onEdited}) {
 
         // next step
         setLoadingImageDetail(true);
-    }
+    };
 
     const checkIfEdited = () => {
         const changed = imageName !== image || containerName !== name;
@@ -265,7 +265,7 @@ function CreateNameImage({name, image, onConfirm, onEdited}) {
                     return;
                 }
                 setLoadingImgOpts(false);
-            })
+            });
 
         return () => ac.abort();
     }, [imageName, loadingImgOpts, containerName, navigate, onConfirm, imageOpt, searchParams]);

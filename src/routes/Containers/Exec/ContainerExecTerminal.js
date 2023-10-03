@@ -32,7 +32,7 @@ export default function ContainerExecTerminal({containerId, execOpts, stopPipeSi
         let terminalCloser = () => {
             cancel = true;
             cancelFunc();
-        }
+        };
 
         promise.then(handle => {
             xtWriter({type: 'data', data: term.reset});

@@ -6,7 +6,7 @@ class Pipe {
                     this.cb(data);
                 }
             });
-        }
+        };
 
         this._onReceive = func => {
             this.cb = func;

@@ -143,7 +143,7 @@ export const uiActions = {
             return {
                 open: allFalse.map((v, idx) => idx === idxToOpen)
             };
-        })
+        });
     },
     enableAll: () => {
         store.setState(() => ({disabled: allFalse}));

@@ -19,7 +19,7 @@ export default function MyDrawerItem({drawerOpen, text, icon, path, or, href}) {
     let selected = false;
     if (pathname.indexOf(path) === 0
         && (pathname.length === path.length || pathname[path.length] === '/')) {
-        selected = true
+        selected = true;
     } else if (or) {
         or.forEach(u => {
             if (u === pathname) {

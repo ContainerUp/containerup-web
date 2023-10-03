@@ -18,8 +18,8 @@ export function receiveOnlyWebsocket(url, loginKey) {
             }
 
             const closeWriter = closePipe.useWriter();
-            closeWriter(d)
-        }
+            closeWriter(d);
+        };
 
         let open = false;
         let errClosed = false;

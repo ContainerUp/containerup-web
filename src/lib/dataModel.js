@@ -10,13 +10,13 @@ let loginKey = sessionStorage.getItem(sessionKeyName);
 const errors = {
     errNoLogin: new Error('not logged in'),
     errWebsocket: new Error('cannot connect websocket')
-}
+};
 
 const cacheContainerInspect = {};
 
 const getLoginKeyAndPrefix = () => {
     return [loginKey, prefix];
-}
+};
 
 const login = (username, password) => {
     return axios.post(prefix + '/login', {
@@ -44,7 +44,7 @@ const logout = () => {
             Authorization: 'Bearer ' + key
         }
     });
-}
+};
 
 const containerList = (abortController) => {
     if (!loginKey) {
@@ -56,7 +56,7 @@ const containerList = (abortController) => {
             Authorization: 'Bearer ' + loginKey
         }
     })
-        .then(resp => resp.data)
+        .then(resp => resp.data);
 };
 
 const containerAction = (containerId, action, abortController) => {
@@ -69,7 +69,7 @@ const containerAction = (containerId, action, abortController) => {
             Authorization: 'Bearer ' + loginKey
         }
     })
-        .then(resp => resp.data)
+        .then(resp => resp.data);
 };
 
 const containerInspect = (containerId, readCache, abortController) => {
@@ -91,7 +91,7 @@ const containerInspect = (containerId, readCache, abortController) => {
             if (resp.data) {
                 if (cacheContainerInspect[containerId]) {
                     // data is replaced
-                    clearTimeout(cacheContainerInspect[containerId].timeout)
+                    clearTimeout(cacheContainerInspect[containerId].timeout);
                 }
 
                 cacheContainerInspect[containerId] = {
@@ -102,7 +102,7 @@ const containerInspect = (containerId, readCache, abortController) => {
                 };
             }
             return resp.data;
-        })
+        });
 };
 
 const containerLogs = (containerId, logOpts) => {
@@ -118,7 +118,7 @@ const containerLogs = (containerId, logOpts) => {
 
     let protocol = 'ws:';
     if (window.location.protocol === 'https:') {
-        protocol = 'wss:'
+        protocol = 'wss:';
     }
     let url = protocol + '//' + window.location.host + prefix + '/container/' + containerId + '/logs';
 
@@ -144,7 +144,7 @@ const containerExec = (containerId, execOpts) => {
 
     let protocol = 'ws:';
     if (window.location.protocol === 'https:') {
-        protocol = 'wss:'
+        protocol = 'wss:';
     }
     let url = protocol + '//' + window.location.host + prefix + '/container/' + containerId + '/exec';
 
@@ -204,7 +204,7 @@ const containerExec = (containerId, execOpts) => {
                 reject(errors.errWebsocket);
                 return;
             }
-            ws.close()
+            ws.close();
             closeWriter({code: -1, reason: 'websocket error'});
             errClosed = true;
         });
@@ -229,8 +229,8 @@ const containerCreate = (containerSpec, abortController) => {
             Authorization: 'Bearer ' + loginKey
         }
     })
-        .then(resp => resp.data)
-}
+        .then(resp => resp.data);
+};
 
 const imageList = (abortController) => {
     if (!loginKey) {
@@ -242,7 +242,7 @@ const imageList = (abortController) => {
             Authorization: 'Bearer ' + loginKey
         }
     })
-        .then(resp => resp.data)
+        .then(resp => resp.data);
 };
 
 const cacheImageInspect = {};
@@ -266,7 +266,7 @@ const imageInspect = (imageId, readCache, abortController) => {
             if (resp.data) {
                 if (cacheImageInspect[imageId]) {
                     // data is replaced
-                    clearTimeout(cacheImageInspect[imageId].timeout)
+                    clearTimeout(cacheImageInspect[imageId].timeout);
                 }
 
                 cacheImageInspect[imageId] = {
@@ -277,7 +277,7 @@ const imageInspect = (imageId, readCache, abortController) => {
                 };
             }
             return resp.data;
-        })
+        });
 };
 
 const imageAction = (imageId, action, abortController) => {
@@ -290,7 +290,7 @@ const imageAction = (imageId, action, abortController) => {
             Authorization: 'Bearer ' + loginKey
         }
     })
-        .then(resp => resp.data)
+        .then(resp => resp.data);
 };
 
 const imagePull = imageName => {
@@ -300,7 +300,7 @@ const imagePull = imageName => {
 
     let protocol = 'ws:';
     if (window.location.protocol === 'https:') {
-        protocol = 'wss:'
+        protocol = 'wss:';
     }
     let url = protocol + '//' + window.location.host + prefix + '/image/pull';
 

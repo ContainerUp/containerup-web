@@ -109,7 +109,7 @@ export default function ContainerDialogCommit({open, containerName, containerIdS
                         fullWidth
                         size="small"
                         value={tag}
-                        onChange={event => {setTag(event.target.value)}}
+                        onChange={event => setTag(event.target.value)}
                         sx={{marginTop: '12px'}}
                         onKeyDown={e => {
                             if (e.key === 'Enter') {

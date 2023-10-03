@@ -37,7 +37,7 @@ const makeOptions = (title, options) => {
 
     if (options) {
         if (options.stepSize) {
-            opt.scales.y.ticks = {stepSize: options.stepSize}
+            opt.scales.y.ticks = {stepSize: options.stepSize};
         }
         if (options.suggestedMax) {
             opt.scales.y.suggestedMax = options.suggestedMax;

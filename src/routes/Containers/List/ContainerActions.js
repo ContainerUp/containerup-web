@@ -166,7 +166,7 @@ export default function ContainerActions({c}) {
     const canDelete = !actioning && (c.State === 'exited' || c.State === 'created');
 
     const handleDialogCommitClose = useCallback(() => {
-        setDialogCommitOpen(false)
+        setDialogCommitOpen(false);
     }, []);
 
     return (

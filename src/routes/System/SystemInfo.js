@@ -38,7 +38,7 @@ export default function SystemInfo() {
                 if (error.response) {
                     e = error.response.data;
                 }
-                setErrMsg(e)
+                setErrMsg(e);
             })
             .finally(() => {
                 if (ac.signal.aborted) {

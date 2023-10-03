@@ -25,25 +25,25 @@ export default function ContainerExecOptions({execOpts, onExec, stopPipeSide}) {
                 cmd
             });
         }
-    }
+    };
 
     const handleTtyChange = event => {
         setTty(event.target.checked);
-    }
+    };
 
     const handleInteractiveChange = event => {
         setInteractive(event.target.checked);
-    }
+    };
 
     const handleCmdChange = event => {
         setCmd(event.target.value);
-    }
+    };
 
     const stopWriter = stopPipeSide.useWriter();
     const handleStop = () => {
         setLive(false);
         stopWriter();
-    }
+    };
 
     return (
         <Stack

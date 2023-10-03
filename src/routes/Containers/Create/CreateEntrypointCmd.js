@@ -240,8 +240,8 @@ const WorkDir = ({workdir, workdirDefault, editing, onChange, onEditing, disable
             </Box>
 
         </Stack>
-    )
-}
+    );
+};
 
 function CreateEntrypointCmd({cmd, workDir, imageDetail, onEdited, onConfirm}) {
     const [editCmd, setEditCmd] = useState(cmd);

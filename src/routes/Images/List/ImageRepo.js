@@ -45,5 +45,5 @@ export default function ImageRepo({repo}) {
                 </Link>
             )}
         </div>
-    )
+    );
 }

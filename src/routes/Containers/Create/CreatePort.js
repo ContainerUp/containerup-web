@@ -153,7 +153,7 @@ const Port = ({port, editing, onChange, onEditing, onDelete, disabled}) => {
     let helperTextHost = '';
     if (!helperTextHost) {
         if (hostPorts && hostPorts.indexOf(dupValHost) !== - 1) {
-            helperTextHost = 'Duplicated port ' + dupValHost
+            helperTextHost = 'Duplicated port ' + dupValHost;
         }
     }
     if (!helperTextHost) {
@@ -284,7 +284,7 @@ function CreatePort({ports, imageDetail, onEdited, onConfirm}) {
                 if (map[containerPortProto] === undefined) {
                     total += 1;
                 }
-            })
+            });
         }
         return [...Array(total)].map(() => false);
     };
@@ -449,7 +449,7 @@ function CreatePort({ports, imageDetail, onEdited, onConfirm}) {
             protocol: 'tcp'
         }]);
         setEditing([...editing, true]);
-    }
+    };
 
     return (
         <Stack spacing={3} key={version}>

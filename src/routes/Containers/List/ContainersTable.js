@@ -23,12 +23,12 @@ export default function ContainersTable({loading, errMsg, containersData}) {
         return containersData.map(c => {
             c.idShort = c.Id.substring(0, 12);
 
-            c.ports = []
+            c.ports = [];
             if (c.Ports) {
                 c.Ports.forEach(p => {
                     let ip = '0.0.0.0';
                     if (p.host_ip) {
-                        ip = p.host_ip
+                        ip = p.host_ip;
                     }
                     c.ports.push({
                         ip,

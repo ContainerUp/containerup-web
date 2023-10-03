@@ -216,7 +216,7 @@ function CreateVolume({volumes, imageDetail, onEdited, onConfirm}) {
                 if (map[containerDir] === undefined) {
                     total += 1;
                 }
-            })
+            });
         }
         return [...Array(total)].map(() => false);
     };
@@ -317,7 +317,7 @@ function CreateVolume({volumes, imageDetail, onEdited, onConfirm}) {
         setEditing(editing.filter((v, idx) => {
             return idx !== i;
         }));
-    }
+    };
 
     const handleConfirm = () => {
         onConfirm(editVolumes);
@@ -363,7 +363,7 @@ function CreateVolume({volumes, imageDetail, onEdited, onConfirm}) {
             rw: 'rw'
         }]);
         setEditing([...editing, true]);
-    }
+    };
 
     return (
         <Stack spacing={3} key={version}>

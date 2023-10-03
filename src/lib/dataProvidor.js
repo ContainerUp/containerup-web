@@ -5,7 +5,7 @@ const makeAioConnection = (onData, onOpen, onError, onClose) => {
 
     let protocol = 'ws:';
     if (window.location.protocol === 'https:') {
-        protocol = 'wss:'
+        protocol = 'wss:';
     }
     let url = protocol + '//' + window.location.host + prefix + '/subscribe';
 

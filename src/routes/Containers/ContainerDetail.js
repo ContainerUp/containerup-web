@@ -31,7 +31,7 @@ const tabs = [{
 const tabsMap = {};
 tabs.forEach((t, i) => {
     tabsMap[t.to] = i;
-})
+});
 
 export default function ContainerDetail() {
     const {containerId} = useParams();
@@ -39,7 +39,7 @@ export default function ContainerDetail() {
 
     // if pathname is like /containers/0abcde3333 then redirect to overview
     const [tabVal, tabValValid] = useMemo(() => {
-        const parts = pathname.split('/')
+        const parts = pathname.split('/');
         // "", "containers", "0abcde3333", "overview"
         if (parts.length < 4) {
             return [0, false];
@@ -120,7 +120,7 @@ export default function ContainerDetail() {
             }
         };
 
-        const cancel = aioProvider().container(containerId, onData, onError)
+        const cancel = aioProvider().container(containerId, onData, onError);
         return () => cancel();
     }, [containerId, loading, navigate, pathname]);
 

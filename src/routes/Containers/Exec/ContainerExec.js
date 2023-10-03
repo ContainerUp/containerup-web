@@ -19,7 +19,7 @@ export default function ContainerExec() {
     const handleExec = opts => {
         setExecOpts(opts);
         setStart(true);
-    }
+    };
 
     return (
         <>

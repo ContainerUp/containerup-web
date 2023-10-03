@@ -26,7 +26,7 @@ export default function Login() {
     const [password, setPassword] = useState(defaultPassword);
     const [loading, setLoading] = useState(false);
     const [showAlert, setShowAlert] = useState(false);
-    const [errMsg, setErrMsg] = useState('')
+    const [errMsg, setErrMsg] = useState('');
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
@@ -44,7 +44,7 @@ export default function Login() {
                 navigate(to);
             })
             .catch(error => {
-                let e = error.toString()
+                let e = error.toString();
                 if (error.response) {
                     if (error.response.status === 401) {
                         e = "Incorrect username or password";
@@ -135,5 +135,5 @@ export default function Login() {
             </Container>
 
         </>
-    )
+    );
 }

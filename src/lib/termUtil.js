@@ -7,7 +7,7 @@ const color = {
     yellow: '\x1b[33m',
     white: '\x1b[37m',
     reset: '\x1b\x63'
-}
+};
 
 const colorText = (text, colorName) => {
     return color[colorName] + text + colorEnd;

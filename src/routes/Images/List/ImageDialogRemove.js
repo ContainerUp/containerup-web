@@ -17,7 +17,7 @@ export default function ImageDialogRemove({open, image, onClose}) {
 
     const handleDialogClose = () => {
         onClose();
-    }
+    };
 
     const handleDialogForceClose = () => {
         if (actioning) {
@@ -28,7 +28,7 @@ export default function ImageDialogRemove({open, image, onClose}) {
 
     const handleDialogConfirm = () => {
         setActioning(true);
-    }
+    };
 
     useEffect(() => {
         if (!actioning) {
@@ -87,11 +87,11 @@ export default function ImageDialogRemove({open, image, onClose}) {
             <>
                 <b>{dialogImageName}</b> ({image.idShort})
             </>
-        )
+        );
     } else {
         dialogImageName = (
             <b>{image.idShort}</b>
-        )
+        );
     }
 
     return (
