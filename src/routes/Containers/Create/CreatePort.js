@@ -21,9 +21,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import RestoreIcon from "@mui/icons-material/Restore";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Typography from "@mui/material/Typography";
-import {useDispatch, useSelector} from "react-redux";
-import {uiActions} from "./uiSlice";
-import {containerActions} from "./containerSlice";
+import {containerActions, uiActions, useContainerStore} from "./store";
 
 const checkContainerPort = str => {
     const p = parseInt(str);
@@ -508,28 +506,26 @@ function CreatePort({ports, imageDetail, onEdited, onConfirm}) {
 const accordionIndex = 4;
 
 export default function AccordionPort() {
-    const dispatch = useDispatch();
+    const open = useContainerStore(state => state.open[accordionIndex]);
+    const disabled = useContainerStore(state => state.disabled[accordionIndex]);
+    const edited = useContainerStore(state => state.edited[accordionIndex]);
+    const imageDetail = useContainerStore(state => state.imageDetail);
+    const version = useContainerStore(state => state.version[accordionIndex]);
 
-    const open = useSelector(state => state.ui.open[accordionIndex]);
-    const disabled = useSelector(state => state.ui.disabled[accordionIndex]);
-    const edited = useSelector(state => state.ui.edited[accordionIndex]);
-    const imageDetail = useSelector(state => state.container.imageDetail);
-    const version = useSelector(state => state.ui.version[accordionIndex]);
-
-    const ports = useSelector(state => state.container.ports);
+    const ports = useContainerStore(state => state.ports);
 
     const onExpandChange = (event, open) => {
-        dispatch(uiActions.toggle(accordionIndex, open));
+        uiActions.toggle(accordionIndex, open);
     };
 
     const onEdited = edited => {
-        dispatch(uiActions.setEdited(accordionIndex, edited));
+        uiActions.setEdited(accordionIndex, edited);
     };
 
     const onConfirm = p => {
-        dispatch(containerActions.setPorts(p));
+        containerActions.setPorts(p);
 
-        dispatch(uiActions.openNext(accordionIndex));
+        uiActions.openNext(accordionIndex);
     };
 
     return (

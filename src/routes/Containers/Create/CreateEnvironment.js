@@ -11,9 +11,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreIcon from '@mui/icons-material/Restore';
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Typography from "@mui/material/Typography";
-import {useDispatch, useSelector} from "react-redux";
-import {uiActions} from "./uiSlice";
-import {containerActions} from "./containerSlice";
+import {containerActions, uiActions, useContainerStore} from "./store";
 
 const envRe = /^([a-zA-Z0-9_]+)=(.*)$/;
 const envNameRe = /^[a-zA-Z0-9_]+$/;
@@ -437,28 +435,26 @@ function CreateEnvironment({envs, imageDetail, onEdited, onConfirm}) {
 const accordionIndex = 2;
 
 export default function AccordionEnvironment() {
-    const dispatch = useDispatch();
+    const open = useContainerStore(state => state.open[accordionIndex]);
+    const disabled = useContainerStore(state => state.disabled[accordionIndex]);
+    const edited = useContainerStore(state => state.edited[accordionIndex]);
+    const imageDetail = useContainerStore(state => state.imageDetail);
+    const version = useContainerStore(state => state.version[accordionIndex]);
 
-    const open = useSelector(state => state.ui.open[accordionIndex]);
-    const disabled = useSelector(state => state.ui.disabled[accordionIndex]);
-    const edited = useSelector(state => state.ui.edited[accordionIndex]);
-    const imageDetail = useSelector(state => state.container.imageDetail);
-    const version = useSelector(state => state.ui.version[accordionIndex]);
-
-    const envs = useSelector(state => state.container.envs);
+    const envs = useContainerStore(state => state.envs);
 
     const onExpandChange = (event, open) => {
-        dispatch(uiActions.toggle(accordionIndex, open));
+        uiActions.toggle(accordionIndex, open);
     };
 
     const onEdited = edited => {
-        dispatch(uiActions.setEdited(accordionIndex, edited));
+        uiActions.setEdited(accordionIndex, edited);
     };
 
     const onConfirm = p => {
-        dispatch(containerActions.setEnvs(p));
+        containerActions.setEnvs(p);
 
-        dispatch(uiActions.openNext(accordionIndex));
+        uiActions.openNext(accordionIndex);
     };
 
     return (

@@ -11,23 +11,20 @@ import dataModel from "../../../lib/dataModel";
 import {useNavigate} from "react-router-dom";
 import {enqueueSnackbar} from "notistack";
 import AccordionAdv from "./CreateAdv";
-import store from './store';
-import {Provider, useSelector} from "react-redux";
 import DialogDiscard from "./DialogDiscard";
-import {uiActions} from "./uiSlice";
-import {containerActions} from "./containerSlice";
 import CheckIcon from "@mui/icons-material/Check";
 import AccordionResources from "./CreateResources";
 import {unstable_usePrompt as usePrompt} from "react-router-dom";
+import {containerActions, uiActions, useContainerStore} from "./store";
 
 const CreateAction = () => {
     const navigate = useNavigate();
     const [errMsg, setErrMsg] = useState('');
     const [creating, setCreating] = useState(false);
 
-    const imageDetail = useSelector(state => state.container.imageDetail);
-    const anyEdited = useSelector(state => {
-        return state.ui.edited.indexOf(true) !== -1;
+    const imageDetail = useContainerStore(state => state.imageDetail);
+    const anyEdited = useContainerStore(state => {
+        return state.edited.indexOf(true) !== -1;
     });
 
     usePrompt({
@@ -55,7 +52,7 @@ const CreateAction = () => {
             return;
         }
 
-        const {name, imageDetail, cmd, workDir, envs, volumes, ports, res, adv} = store.getState().container;
+        const {name, imageDetail, cmd, workDir, envs, volumes, ports, res, adv} = useContainerStore.getState();
 
         const envMap = {};
         for (const e of envs) {
@@ -147,7 +144,6 @@ const CreateAction = () => {
 };
 
 export default function ContainerCreate() {
-
     // breadcrumb
     useEffect(() => {
         const ctrl = getController('bar_breadcrumb');
@@ -164,33 +160,30 @@ export default function ContainerCreate() {
         document.title = 'ContainerUp - Create a container';
 
         return () => {
-            store.dispatch(uiActions.reset());
-            store.dispatch(containerActions.reset());
+            uiActions.reset();
+            containerActions.reset();
         };
     }, []);
 
     return (
-        <Provider store={store}>
-            <Box sx={{margin: "0 36px"}}>
-                <AccordionNameImage />
+        <Box sx={{margin: "0 36px"}}>
+            <AccordionNameImage />
 
-                <AccordionEntrypointCmd />
+            <AccordionEntrypointCmd />
 
-                <AccordionEnvironment />
+            <AccordionEnvironment />
 
-                <AccordionVolume />
+            <AccordionVolume />
 
-                <AccordionPort />
+            <AccordionPort />
 
-                <AccordionResources />
+            <AccordionResources />
 
-                <AccordionAdv />
+            <AccordionAdv />
 
-                <DialogDiscard />
+            <DialogDiscard />
 
-                <CreateAction />
-
-            </Box>
-        </Provider>
+            <CreateAction />
+        </Box>
     );
 }

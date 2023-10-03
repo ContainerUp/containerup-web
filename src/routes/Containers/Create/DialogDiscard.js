@@ -1,19 +1,16 @@
 import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material";
-import {useDispatch, useSelector} from "react-redux";
-import {uiActions} from "./uiSlice";
+import {uiActions, useContainerStore} from "./store";
 
 export default function DialogDiscard() {
-    const dispatch = useDispatch();
-
-    const open = useSelector(state => state.ui.showDialogDiscard);
+    const open = useContainerStore(state => state.showDialogDiscard);
 
     const handleDialogCancel = () => {
-        dispatch(uiActions.closeDialog());
+        uiActions.closeDialog();
     };
 
     const handleDialogDiscard = () => {
-        dispatch(uiActions.confirmDiscard());
-    }
+        uiActions.confirmDiscard();
+    };
 
     return (
         <Dialog

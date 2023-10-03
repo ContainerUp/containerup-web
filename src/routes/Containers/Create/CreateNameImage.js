@@ -22,9 +22,7 @@ import {demoImage} from "../../Images/List/ImagePullDialog";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Typography from "@mui/material/Typography";
 import {getImageNameFromInspection} from "../../../lib/imageUtil";
-import {useDispatch, useSelector} from "react-redux";
-import {uiActions} from "./uiSlice";
-import {containerActions} from "./containerSlice";
+import {containerActions, uiActions, useContainerStore} from "./store";
 
 const checkNameAndGetImage = (containerName, imageId, abortController) => {
     const p1 = dataModel.containerInspect(containerName, false, abortController)
@@ -442,30 +440,28 @@ function CreateNameImage({name, image, onConfirm, onEdited}) {
 const accordionIndex = 0;
 
 export default function AccordionNameImage() {
-    const dispatch = useDispatch();
+    const open = useContainerStore(state => state.open[accordionIndex]);
+    const disabled = useContainerStore(state => state.disabled[accordionIndex]);
+    const edited = useContainerStore(state => state.edited[accordionIndex]);
+    const imageDetail = useContainerStore(state => state.imageDetail);
 
-    const open = useSelector(state => state.ui.open[accordionIndex]);
-    const disabled = useSelector(state => state.ui.disabled[accordionIndex]);
-    const edited = useSelector(state => state.ui.edited[accordionIndex]);
-    const imageDetail = useSelector(state => state.container.imageDetail);
-
-    const name = useSelector(state => state.container.name);
+    const name = useContainerStore(state => state.name);
 
     const handleChangeAccordion = (event, open) => {
-        dispatch(uiActions.toggle(accordionIndex, open, !!imageDetail));
+        uiActions.toggle(accordionIndex, open, !!imageDetail);
     };
 
     const handleEdited = useCallback(edited => {
-        dispatch(uiActions.setEdited(accordionIndex, edited));
-    }, [dispatch]);
+        uiActions.setEdited(accordionIndex, edited);
+    }, []);
 
     const handleConfirm = useCallback(p => {
-        dispatch(containerActions.setName(p.name));
-        dispatch(containerActions.setImageDetail(p.imageDetail));
+        containerActions.setName(p.name);
+        containerActions.setImageDetail(p.imageDetail);
 
-        dispatch(uiActions.enableAll());
-        dispatch(uiActions.openNext(accordionIndex));
-    }, [dispatch]);
+        uiActions.enableAll();
+        uiActions.openNext(accordionIndex);
+    }, []);
 
     return (
         <Accordion

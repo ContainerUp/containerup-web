@@ -19,9 +19,7 @@ import RestoreIcon from '@mui/icons-material/Restore';
 import {green, grey, orange} from "@mui/material/colors";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Typography from "@mui/material/Typography";
-import {useDispatch, useSelector} from "react-redux";
-import {uiActions} from "./uiSlice";
-import {containerActions} from "./containerSlice";
+import {containerActions, uiActions, useContainerStore} from "./store";
 
 const Cmd = ({cmd, cmdDefault, editing, onChange, onEditing, disabled}) => {
     const inputRef = useRef();
@@ -370,30 +368,28 @@ function CreateEntrypointCmd({cmd, workDir, imageDetail, onEdited, onConfirm}) {
 const accordionIndex = 1;
 
 export default function AccordionEntrypointCmd() {
-    const dispatch = useDispatch();
+    const open = useContainerStore(state => state.open[accordionIndex]);
+    const disabled = useContainerStore(state => state.disabled[accordionIndex]);
+    const edited = useContainerStore(state => state.edited[accordionIndex]);
+    const imageDetail = useContainerStore(state => state.imageDetail);
+    const version = useContainerStore(state => state.version[accordionIndex]);
 
-    const open = useSelector(state => state.ui.open[accordionIndex]);
-    const disabled = useSelector(state => state.ui.disabled[accordionIndex]);
-    const edited = useSelector(state => state.ui.edited[accordionIndex]);
-    const imageDetail = useSelector(state => state.container.imageDetail);
-    const version = useSelector(state => state.ui.version[accordionIndex]);
-
-    const cmd = useSelector(state => state.container.cmd);
-    const workDir = useSelector(state => state.container.workDir);
+    const cmd = useContainerStore(state => state.cmd);
+    const workDir = useContainerStore(state => state.workDir);
 
     const onExpandChange = (event, open) => {
-        dispatch(uiActions.toggle(accordionIndex, open));
+        uiActions.toggle(accordionIndex, open);
     };
 
     const onEdited = edited => {
-        dispatch(uiActions.setEdited(accordionIndex, edited));
+        uiActions.setEdited(accordionIndex, edited);
     };
 
     const onConfirm = p => {
-        dispatch(containerActions.setCmd(p.cmd));
-        dispatch(containerActions.setWorkDir(p.workDir));
+        containerActions.setCmd(p.cmd);
+        containerActions.setWorkDir(p.workDir);
 
-        dispatch(uiActions.openNext(accordionIndex));
+        uiActions.openNext(accordionIndex);
     };
 
     const texts = [];

@@ -12,10 +12,8 @@ import Typography from "@mui/material/Typography";
 import {grey, orange} from "@mui/material/colors";
 import CheckIcon from "@mui/icons-material/Check";
 import {useEffect, useMemo, useRef, useState} from "react";
-import {useDispatch, useSelector} from "react-redux";
-import {uiActions} from "./uiSlice";
-import {containerActions} from "./containerSlice";
 import RestoreIcon from "@mui/icons-material/Restore";
+import {containerActions, uiActions, useContainerStore} from "./store";
 
 function CreateAdv({adv, onEdited, onConfirm}) {
     const [editAdv, setEditAdv] = useState(adv);
@@ -116,27 +114,24 @@ function CreateAdv({adv, onEdited, onConfirm}) {
 const accordionIndex = 6;
 
 export default function AccordionAdv() {
-    const dispatch = useDispatch();
+    const open = useContainerStore(state => state.open[accordionIndex]);
+    const disabled = useContainerStore(state => state.disabled[accordionIndex]);
+    const edited = useContainerStore(state => state.edited[accordionIndex]);
+    const version = useContainerStore(state => state.version[accordionIndex]);
 
-    const open = useSelector(state => state.ui.open[accordionIndex]);
-    const disabled = useSelector(state => state.ui.disabled[accordionIndex]);
-    const edited = useSelector(state => state.ui.edited[accordionIndex]);
-    const version = useSelector(state => state.ui.version[accordionIndex]);
-
-    const adv = useSelector(state => state.container.adv);
+    const adv = useContainerStore(state => state.adv);
 
     const onExpandChange = (event, open) => {
-        dispatch(uiActions.toggle(accordionIndex, open));
+        uiActions.toggle(accordionIndex, open);
     };
 
     const onEdited = edited => {
-        dispatch(uiActions.setEdited(accordionIndex, edited));
+        uiActions.setEdited(accordionIndex, edited);
     };
 
     const onConfirm = p => {
-        dispatch(containerActions.setAdv(p));
-
-        dispatch(uiActions.openNext(accordionIndex));
+        containerActions.setAdv(p);
+        uiActions.openNext(accordionIndex);
     };
 
     const texts = [];

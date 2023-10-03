@@ -12,11 +12,9 @@ import Typography from "@mui/material/Typography";
 import {grey, orange} from "@mui/material/colors";
 import CheckIcon from "@mui/icons-material/Check";
 import {useEffect, useMemo, useRef, useState} from "react";
-import {useDispatch, useSelector} from "react-redux";
-import {uiActions} from "./uiSlice";
-import {containerActions} from "./containerSlice";
 import TextField from "@mui/material/TextField";
 import RestoreIcon from "@mui/icons-material/Restore";
+import {containerActions, uiActions, useContainerStore} from "./store";
 
 const regexCpuShares = /^[1-9][0-9]{0,5}$/; // 1 ~ 999999
 const regexCpuCores = /^(0\.[0-9]{1,2}|[1-9][0-9]?(\.[0-9]{1,2})?)$/; // 0.01 ~ 99.99
@@ -252,27 +250,25 @@ function CreateResources({res, onEdited, onConfirm}) {
 const accordionIndex = 5;
 
 export default function AccordionResources() {
-    const dispatch = useDispatch();
+    const open = useContainerStore(state => state.open[accordionIndex]);
+    const disabled = useContainerStore(state => state.disabled[accordionIndex]);
+    const edited = useContainerStore(state => state.edited[accordionIndex]);
+    const version = useContainerStore(state => state.version[accordionIndex]);
 
-    const open = useSelector(state => state.ui.open[accordionIndex]);
-    const disabled = useSelector(state => state.ui.disabled[accordionIndex]);
-    const edited = useSelector(state => state.ui.edited[accordionIndex]);
-    const version = useSelector(state => state.ui.version[accordionIndex]);
-
-    const res = useSelector(state => state.container.res);
+    const res = useContainerStore(state => state.res);
 
     const onExpandChange = (event, open) => {
-        dispatch(uiActions.toggle(accordionIndex, open));
+        uiActions.toggle(accordionIndex, open);
     };
 
     const onEdited = edited => {
-        dispatch(uiActions.setEdited(accordionIndex, edited));
+        uiActions.setEdited(accordionIndex, edited);
     };
 
     const onConfirm = p => {
-        dispatch(containerActions.setRes(p));
+        containerActions.setRes(p);
 
-        dispatch(uiActions.openNext(accordionIndex));
+        uiActions.openNext(accordionIndex);
     };
 
     const texts = [];
