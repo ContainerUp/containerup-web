@@ -3,7 +3,6 @@ import {
     Paper, Stack,
     Table,
     TableBody,
-    TableCell as MuiTableCell,
     TableContainer,
     TableHead,
     TableRow
@@ -17,19 +16,7 @@ import ContainerStatus from "../ContainerStatus";
 import {useMemo} from "react";
 import ContainerActions from "./ContainerActions";
 import CreatedAt from "../../../components/CreatedAt";
-import {styled} from "@mui/material/styles";
-
-export const TableCell = styled(MuiTableCell)(({theme}) => ({
-    [theme.breakpoints.down('xl')]: {
-        padding: 12
-    },
-    [theme.breakpoints.down('lg')]: {
-        padding: 6
-    },
-    [theme.breakpoints.down('md')]: {
-        padding: 3
-    }
-}));
+import {ResponsiveTableCell as TableCell} from "../../../components/ReponsiveTableCell";
 
 export default function ContainersTable({loading, errMsg, containersData}) {
     const cd = useMemo(() => {

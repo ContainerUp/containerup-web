@@ -3,7 +3,6 @@ import {
     Paper,
     Table,
     TableBody,
-    TableCell,
     TableContainer,
     TableHead,
     TableRow
@@ -17,6 +16,7 @@ import sizeUtil from "../../../lib/sizeUtil";
 import ImageActions from "./ImageActions";
 import CreatedAt from "../../../components/CreatedAt";
 import ImageRepo from "./ImageRepo";
+import {ResponsiveTableCell as TableCell} from "../../../components/ReponsiveTableCell";
 
 export default function ImagesTable({loading, errMsg, imagesData}) {
     const imgd = useMemo(() => {
