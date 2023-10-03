@@ -31,19 +31,19 @@ const CreateAction = () => {
     });
 
     usePrompt({
-        when: !!imageDetail,
+        when: !!imageDetail && !creating,
         message: 'You have unsaved data. Do you really want to leave?'
     });
     useEffect(() => {
         function block(event) {
-            if (!!imageDetail) {
+            if (!!imageDetail && !creating) {
                 event.preventDefault();
                 return event.returnValue = "";
             }
         }
         window.addEventListener('beforeunload', block);
         return () => window.removeEventListener('beforeunload', block);
-    }, [imageDetail]);
+    }, [creating, imageDetail]);
 
     const handleCreate = () => {
         setCreating(true);
