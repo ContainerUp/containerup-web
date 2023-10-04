@@ -4,6 +4,7 @@ import {Alert, Paper, Skeleton} from "@mui/material";
 import dataModel from "../../lib/dataModel";
 import {Fragment} from "react";
 import {getController} from "../../lib/HostGuestController";
+import ContainerUpLearnMore from "../../components/ContainerUpLearnMore";
 
 export default function SystemInfo() {
     const [errMsg, setErrMsg] = useState('');
@@ -90,6 +91,8 @@ export default function SystemInfo() {
                     {errMsg}
                 </Alert>
             )}
+
+            <ContainerUpLearnMore />
         </>
     );
 }
