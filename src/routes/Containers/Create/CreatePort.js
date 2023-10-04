@@ -23,66 +23,108 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Typography from "@mui/material/Typography";
 import {containerActions, uiActions, useContainerStore} from "./store";
 
-const checkContainerPort = str => {
-    const p = parseInt(str);
-    if (isNaN(p) || p < 1 || p > 65535) {
-        return false;
+const ipRegex = /^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/;
+const portRegex = /^[1-9][0-9]{0,4}$/;
+
+const getHostAddrPorts = str => {
+    const ret = [];
+    const parts = str.split(',');
+    const portsMap = {};
+    for (const part of parts) {
+        const ps = part.split(':');
+        if (ps.length === 0 || ps.length > 2) {
+            return false;
+        }
+
+        let portStr = '';
+        let addr = '';
+        if (ps.length === 1) {
+            portStr = ps[0];
+        } else {
+            [addr, portStr] = ps;
+        }
+
+        if (!portStr.match(portRegex)) {
+            return false;
+        }
+        const port = parseInt(portStr);
+        if (isNaN(port) || port < 1 || port > 65535) {
+            return false;
+        }
+
+        if (addr) {
+            if (!addr.match(ipRegex)) {
+                return false;
+            }
+        }
+
+        // duplication check
+        let checkAddr = '0.0.0.0';
+        if (addr) {
+            checkAddr = addr;
+        }
+        const key = checkAddr + ':' + port;
+        if (portsMap[key]) {
+            return false;
+        }
+        portsMap[key] = 1;
+
+        ret.push({
+            addr,
+            port
+        });
     }
-    return p;
+    return ret;
 };
 
-const checkHostPort = (editPort, editHost) => {
-    if (editPort.predefined && editHost === '') {
-        return [];
-    }
-
-    const portsStr = editHost.split(',');
-    const ports = [];
-    const portsMap = {};
-
-    for (const str of portsStr) {
-        const p = parseInt(str);
-        if (isNaN(p) || p < 1 || p > 65535) {
-            return false;
+const generateHostStr = port => {
+    const parts = [];
+    for (const host of port.host) {
+        let str = "";
+        if (host.addr) {
+            str = host.addr + ":";
         }
-        if (portsMap[p]) {
-            // duplication check
-            return false;
-        }
-        portsMap[p] = 1;
-
-        ports.push(p);
+        str += host.port;
+        parts.push(str);
     }
-    ports.sort((a, b) => {
-        return a - b;
-    });
-    if (ports.length === 0) {
-        return false;
-    }
-
-    return ports;
+    return parts.join(',');
 };
 
 const Port = ({port, editing, onChange, onEditing, onDelete, disabled}) => {
     const inputRefContainer = useRef();
     const inputRefHost = useRef();
-    const [editPort, setEditPort] = useState(port);
-    const [editHost, setEditHost] = useState(port.host.join(','));
-    const [submitTries, setSubmitTries] = useState(0);
-    const [dupValContainer, setDupValContainer] = useState(undefined);
-    const [dupValHost, setDupValHost] = useState(0);
 
-    // Do not show error before first submit, for better experience
-    const suppressError = submitTries === 0;
-    const containerPort = checkContainerPort(editPort.container);
-    const invalidContainer = !containerPort;
-    const hostPorts = checkHostPort(editPort, editHost);
-    const invalidHost = !hostPorts;
+    const [editPort, setEditPort] = useState(port);
+
+    const [containerPort, setContainerPort] = useState(port.container ? port.container + '' : '');
+    const [invalidContainer, setInvalidContainer] = useState(false);
+
+    const [hostAddrPorts, setHostAddrPorts] = useState(() => generateHostStr(port));
+    const [invalidHost, setInvalidHost] = useState(false);
+
+    const [dupValContainer, setDupValContainer] = useState(0);
+    const [dupValHost, setDupValHost] = useState('');
 
     const handleSubmit = event => {
         event.preventDefault();
 
-        setSubmitTries(t => t + 1);
+        // empty values
+        let empty = false;
+        if (!containerPort) {
+            setInvalidContainer(true);
+            inputRefContainer.current?.focus();
+            empty = true;
+        }
+        if (!hostAddrPorts) {
+            setInvalidHost(true);
+            if (!empty) {
+                inputRefHost.current?.focus();
+                empty = true;
+            }
+        }
+        if (empty) {
+            return;
+        }
 
         if (invalidContainer || invalidHost) {
             if (invalidContainer) {
@@ -93,24 +135,19 @@ const Port = ({port, editing, onChange, onEditing, onDelete, disabled}) => {
             return;
         }
 
-        const [okContainer, dupHostVal] = onChange({
-            ...editPort,
-            container: containerPort,
-            host: hostPorts
-        });
+        const [okContainer, dupHostVal] = onChange(editPort);
         if (!okContainer) {
             setDupValContainer(editPort.container);
+            setInvalidContainer(true);
             return;
         }
         if (dupHostVal) {
             setDupValHost(dupHostVal);
+            setInvalidHost(true);
             return;
         }
 
-        setEditHost(hostPorts.join(','));
-        setDupValContainer(undefined);
-        setDupValHost(0);
-        setSubmitTries(0);
+        setDupValContainer(0);
         onEditing(false);
     };
 
@@ -122,12 +159,49 @@ const Port = ({port, editing, onChange, onEditing, onDelete, disabled}) => {
             return;
         }
 
+        setInvalidContainer(false);
+        setInvalidHost(false);
+
         setEditPort(port);
-        setEditHost(port.host.join(','));
+        setHostAddrPorts(generateHostStr(port));
         setDupValContainer(undefined);
         setDupValHost(0);
-        setSubmitTries(0);
         onEditing(false);
+    };
+
+    const handleContainerChange = event => {
+        const str = event.target.value;
+        setContainerPort(str);
+        setDupValContainer(0);
+        if (!str.match(portRegex)) {
+            setInvalidContainer(true);
+            return;
+        }
+
+        const port = parseInt(str);
+        if (isNaN(port) || port < 1 || port > 65535) {
+            setInvalidContainer(true);
+            return;
+        }
+
+        setInvalidContainer(false);
+        setEditPort({
+            ...editPort,
+            container: port
+        });
+    };
+
+    const handleHostChange = event => {
+        setHostAddrPorts(event.target.value);
+        setDupValHost('');
+        const result = getHostAddrPorts(event.target.value);
+        if (result) {
+            setEditPort({
+                ...editPort,
+                host: result
+            });
+        }
+        setInvalidHost(!result);
     };
 
     useEffect(() => {
@@ -145,14 +219,14 @@ const Port = ({port, editing, onChange, onEditing, onDelete, disabled}) => {
 
     let helperTextContainer = port.predefined && editing ? 'Predefined by image' : '';
     if (!helperTextContainer) {
-        if (editPort.container === dupValContainer) {
+        if (dupValContainer) {
             helperTextContainer = 'Duplicated port';
         }
     }
 
     let helperTextHost = '';
     if (!helperTextHost) {
-        if (hostPorts && hostPorts.indexOf(dupValHost) !== - 1) {
+        if (dupValHost) {
             helperTextHost = 'Duplicated port ' + dupValHost;
         }
     }
@@ -165,17 +239,13 @@ const Port = ({port, editing, onChange, onEditing, onDelete, disabled}) => {
             <TextField
                 label="Container port"
                 size="small"
-                value={editPort.container === 0 ? '' : editPort.container}
+                value={containerPort}
                 sx={{ width: 150 }}
                 disabled={!editing || port.predefined}
-                onChange={event => setEditPort({
-                    ...editPort,
-                    container: event.target.value
-                })}
-                error={(!suppressError && invalidContainer) || (editPort.container === dupValContainer)}
+                onChange={handleContainerChange}
+                error={invalidContainer}
                 inputRef={inputRefContainer}
                 helperText={helperTextContainer}
-                inputProps={{pattern: "[0-9]{1,5}"}}
             />
 
             <Box>
@@ -197,14 +267,13 @@ const Port = ({port, editing, onChange, onEditing, onDelete, disabled}) => {
             <TextField
                 label="Host port"
                 size="small"
-                value={editHost}
+                value={hostAddrPorts}
                 sx={{ width: '200px' }}
                 disabled={!editing}
-                onChange={event => setEditHost(event.target.value)}
-                error={!suppressError && (invalidHost || dupValHost > 0)}
+                onChange={handleHostChange}
+                error={invalidHost}
                 inputRef={inputRefHost}
                 helperText={helperTextHost}
-                inputProps={{pattern: "[0-9]{1,5}(,[0-9]{1,5})*"}}
             />
 
             <Box>
@@ -344,8 +413,12 @@ function CreatePort({ports, imageDetail, onEdited, onConfirm}) {
             combinedMap[port.container + '/' + port.protocol] = idx;
 
             if (idx !== i) {
-                for (const p of port.host) {
-                    hostPortMap[p + '/' + port.protocol] = 1;
+                for (const host of port.host) {
+                    let addr = '0.0.0.0';
+                    if (host.addr) {
+                        addr = host.addr;
+                    }
+                    hostPortMap[addr + ':' + host.port + '/' + port.protocol] = 1;
                 }
             }
         });
@@ -357,12 +430,15 @@ function CreatePort({ports, imageDetail, onEdited, onConfirm}) {
         }
 
         // duplicated host ports
-        for (const p of newVal.host) {
-            const exist = hostPortMap[p + '/' + newVal.protocol];
-            if (exist) {
-                return [true, p];
+        for (const host of newVal.host) {
+            let addr = '0.0.0.0';
+            if (host.addr) {
+                addr = host.addr;
             }
-            // hostPortMap[p + '/' + newVal.protocol] = 1;
+            const exist = hostPortMap[addr + ':' + host.port + '/' + newVal.protocol];
+            if (exist) {
+                return [true, host.addr ? host.addr + ':' + host.port : host.port + ''];
+            }
         }
 
         // replace the dirty item, or copy clean items
