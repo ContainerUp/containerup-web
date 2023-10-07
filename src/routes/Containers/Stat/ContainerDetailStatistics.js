@@ -116,28 +116,32 @@ export default function ContainerDetailStatistics() {
                 });
 
                 if (chartCpu) {
-                    const cpu = d.CPU;
+                    const cpu = parseFloat(d.CPU.toFixed(2));
                     chartCpu.data.datasets[0].data.push({x: now, y: cpu});
                 }
                 if (chartMem) {
-                    const mem = d.MemUsage / 1024 / 1024;
+                    const mem = parseFloat((d.MemUsage / 1024 / 1024).toFixed(2));
                     chartMem.data.datasets[0].data.push({x: now, y: mem});
                 }
                 if (chartNet) {
                     const [netIn, netOut] = [d.NetInput, d.NetOutput];
                     if (netInLast >= 0) {
                         let [dIn, dOut] = [netIn ? netIn - netInLast : 0, netOut ? netOut - netOutLast : 0];
-                        chartNet.data.datasets[0].data.push({x: now, y: dIn / 1024 / 1024 / deltaSec});
-                        chartNet.data.datasets[1].data.push({x: now, y: dOut / 1024 / 1024 / deltaSec});
+                        dIn = parseFloat((dIn / 1024 / 1024 / deltaSec).toFixed(2));
+                        dOut = parseFloat((dOut / 1024 / 1024 / deltaSec).toFixed(2));
+                        chartNet.data.datasets[0].data.push({x: now, y: dIn});
+                        chartNet.data.datasets[1].data.push({x: now, y: dOut});
                     }
                     [netInLast, netOutLast] = [netIn, netOut];
                 }
                 if (chartBlock) {
                     const [blockIn, blockOut] = [d.BlockInput, d.BlockOutput];
                     if (blockInLast >= 0) {
-                        const [dIn, dOut] = [blockIn ? blockIn - blockInLast : 0, blockOut ? blockOut - blockOutLast : 0];
-                        chartBlock.data.datasets[0].data.push({x: now, y: dIn / 1024 / 1024 / deltaSec});
-                        chartBlock.data.datasets[1].data.push({x: now, y: dOut / 1024 / 1024 / deltaSec});
+                        let [dIn, dOut] = [blockIn ? blockIn - blockInLast : 0, blockOut ? blockOut - blockOutLast : 0];
+                        dIn = parseFloat((dIn / 1024 / 1024 / deltaSec).toFixed(2));
+                        dOut = parseFloat((dOut / 1024 / 1024 / deltaSec).toFixed(2));
+                        chartBlock.data.datasets[0].data.push({x: now, y: dIn});
+                        chartBlock.data.datasets[1].data.push({x: now, y: dOut});
                     }
                     [blockInLast, blockOutLast] = [blockIn, blockOut];
                 }
@@ -145,11 +149,11 @@ export default function ContainerDetailStatistics() {
                 lastUpdate = now;
                 charts.forEach(chart => {
                     for (;chart.data.datasets[0].data.length > 60 / 5 * 3;) {
-                        chart.data.datasets[0].data.pop();
+                        chart.data.datasets[0].data.shift();
                     }
                     if (chart.data.datasets[1]) {
                         for (;chart.data.datasets[1].data.length > 60 / 5 * 3;) {
-                            chart.data.datasets[1].data.pop();
+                            chart.data.datasets[1].data.shift();
                         }
                     }
                     chart.update();
