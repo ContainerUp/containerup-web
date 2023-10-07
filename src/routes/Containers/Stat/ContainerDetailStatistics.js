@@ -3,7 +3,7 @@ import {aioProvider} from "../../../lib/dataProvidor";
 import {useParams} from "react-router-dom";
 import {Line} from "react-chartjs-2";
 import {Box} from "@mui/material";
-import {enqueueSnackbar} from "notistack";
+import {closeSnackbar, enqueueSnackbar} from "notistack";
 import {styled} from "@mui/material/styles";
 
 const makeOptions = (title, options) => {
@@ -90,7 +90,10 @@ export default function ContainerDetailStatistics() {
     const chartBlockRef = useRef();
 
     useEffect(() => {
+        let snackbarKeys = [];
         let [netInLast, netOutLast, blockInLast, blockOutLast] = [-1, -1, -1, -1];
+        let lastUpdate = 0;
+
         const onData = data => {
             const chartCpu = chartCpuRef.current;
             const chartMem = chartMemRef.current;
@@ -98,9 +101,15 @@ export default function ContainerDetailStatistics() {
             const chartBlock = chartBlockRef.current;
             const charts = [chartCpu, chartMem, chartNet, chartBlock];
 
+            if (!data) {
+                snackbarKeys.push(enqueueSnackbar("The statistics data stream is ended.", {variant: 'warning'}));
+                return;
+            }
+
             if (data.Stats && data.Stats.length === 1) {
                 const d = data.Stats[0];
                 const now = Date.now();
+                const deltaSec = lastUpdate ? (now - lastUpdate) / 1000 : 1;
 
                 charts.forEach(chart => {
                     chart.options.scales.x.min = now - 3 * 60 * 1000;
@@ -117,22 +126,23 @@ export default function ContainerDetailStatistics() {
                 if (chartNet) {
                     const [netIn, netOut] = [d.NetInput, d.NetOutput];
                     if (netInLast >= 0) {
-                        const [dIn, dOut] = [netIn - netInLast, netOut - netOutLast];
-                        chartNet.data.datasets[0].data.push({x: now, y: dIn / 1024 / 1024});
-                        chartNet.data.datasets[1].data.push({x: now, y: dOut / 1024 / 1024});
+                        let [dIn, dOut] = [netIn ? netIn - netInLast : 0, netOut ? netOut - netOutLast : 0];
+                        chartNet.data.datasets[0].data.push({x: now, y: dIn / 1024 / 1024 / deltaSec});
+                        chartNet.data.datasets[1].data.push({x: now, y: dOut / 1024 / 1024 / deltaSec});
                     }
                     [netInLast, netOutLast] = [netIn, netOut];
                 }
                 if (chartBlock) {
                     const [blockIn, blockOut] = [d.BlockInput, d.BlockOutput];
                     if (blockInLast >= 0) {
-                        const [dIn, dOut] = [blockIn - blockInLast, blockOut - blockOutLast];
-                        chartBlock.data.datasets[0].data.push({x: now, y: dIn / 1024 / 1024});
-                        chartBlock.data.datasets[1].data.push({x: now, y: dOut / 1024 / 1024});
+                        const [dIn, dOut] = [blockIn ? blockIn - blockInLast : 0, blockOut ? blockOut - blockOutLast : 0];
+                        chartBlock.data.datasets[0].data.push({x: now, y: dIn / 1024 / 1024 / deltaSec});
+                        chartBlock.data.datasets[1].data.push({x: now, y: dOut / 1024 / 1024 / deltaSec});
                     }
                     [blockInLast, blockOutLast] = [blockIn, blockOut];
                 }
 
+                lastUpdate = now;
                 charts.forEach(chart => {
                     for (;chart.data.datasets[0].data.length > 60 / 5 * 3;) {
                         chart.data.datasets[0].data.pop();
@@ -148,11 +158,16 @@ export default function ContainerDetailStatistics() {
         };
 
         const onError = error => {
-            enqueueSnackbar(error.toString(), {variant: 'error'});
+            snackbarKeys.push(enqueueSnackbar(error.toString(), {variant: 'error'}));
         };
 
         const cancel = aioProvider().containerStatistics(containerId, onData, onError);
-        return () => cancel();
+        return () => {
+            cancel();
+            for (const key of snackbarKeys) {
+                closeSnackbar(key);
+            }
+        };
     }, [containerId]);
 
     return (
