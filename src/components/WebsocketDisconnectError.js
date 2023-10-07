@@ -3,7 +3,7 @@ import {Button} from "@mui/material";
 import RefreshIcon from '@mui/icons-material/Refresh';
 
 export function showWebsocketDisconnectError() {
-    const action = snackbarId => (
+    const action = (
         <Button
             color="inherit"
             size="small"
