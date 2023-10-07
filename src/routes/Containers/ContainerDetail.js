@@ -5,6 +5,7 @@ import {getController} from "../../lib/HostGuestController";
 import {aioProvider, isDisconnectError} from "../../lib/dataProvidor";
 import dataModel from "../../lib/dataModel";
 import {showWebsocketDisconnectError} from "../../components/WebsocketDisconnectError";
+import {closeSnackbar} from "notistack";
 
 const tabs = [{
     to: "overview",
@@ -92,6 +93,8 @@ export default function ContainerDetail() {
     }, [container]);
 
     useEffect(() => {
+        const snackbarKeys = [];
+
         const onData = d => {
             setContainer(d);
             setLoading(false);
@@ -113,7 +116,7 @@ export default function ContainerDetail() {
                 setLoading(false);
             } else {
                 if (isDisconnectError(error)) {
-                    showWebsocketDisconnectError();
+                    snackbarKeys.push(showWebsocketDisconnectError());
                 } else {
                     setErrMsg(e);
                 }
@@ -121,7 +124,12 @@ export default function ContainerDetail() {
         };
 
         const cancel = aioProvider().container(containerId, onData, onError);
-        return () => cancel();
+        return () => {
+            cancel();
+            for (const key of snackbarKeys) {
+                closeSnackbar(key);
+            }
+        };
     }, [containerId, loading, navigate, pathname]);
 
     return (

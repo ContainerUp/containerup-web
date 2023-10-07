@@ -10,6 +10,7 @@ import ImagePullDialog from "./ImagePullDialog";
 import {aioProvider, isDisconnectError} from "../../../lib/dataProvidor";
 import {showWebsocketDisconnectError} from "../../../components/WebsocketDisconnectError";
 import ContainerUpLearnMore from "../../../components/ContainerUpLearnMore";
+import {closeSnackbar} from "notistack";
 
 export default function ImageList() {
     const [loading, setLoading] = useState(true);
@@ -19,6 +20,8 @@ export default function ImageList() {
 
 
     useEffect(() => {
+        const snackbarKeys = [];
+
         const onData = data => {
             setImages(data);
             setLoading(false);
@@ -40,7 +43,7 @@ export default function ImageList() {
                 setLoading(false);
             } else {
                 if (isDisconnectError(error)) {
-                    showWebsocketDisconnectError();
+                    snackbarKeys.push(showWebsocketDisconnectError());
                 } else {
                     setErrMsg(e);
                 }
@@ -48,7 +51,12 @@ export default function ImageList() {
         };
 
         const cancel = aioProvider().imagesList(onData, onError);
-        return () => cancel();
+        return () => {
+            cancel();
+            for (const key of snackbarKeys) {
+                closeSnackbar(key);
+            }
+        };
     }, [loading, navigate]);
 
     useEffect(() => {

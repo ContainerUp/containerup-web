@@ -14,7 +14,7 @@ export function showWebsocketDisconnectError() {
         </Button>
     );
 
-    enqueueSnackbar('Websocket disconnected. The information on this page is NOT up-to-date.', {
+    return enqueueSnackbar('Websocket disconnected. The information on this page is NOT up-to-date.', {
         variant: 'warning',
         persist: true,
         action

@@ -10,6 +10,7 @@ import {Link as RouterLink} from 'react-router-dom';
 import {aioProvider, isDisconnectError} from "../../../lib/dataProvidor";
 import {showWebsocketDisconnectError} from "../../../components/WebsocketDisconnectError";
 import ContainerUpLearnMore from "../../../components/ContainerUpLearnMore";
+import {closeSnackbar} from "notistack";
 
 export default function ContainersList() {
     const [loading, setLoading] = useState(true);
@@ -18,6 +19,8 @@ export default function ContainersList() {
     const [containers, setContainers] = useState([]);
 
     useEffect(() => {
+        const snackbarKeys = [];
+
         const onData = data => {
             setContainers(data);
             setLoading(false);
@@ -39,7 +42,7 @@ export default function ContainersList() {
                 setLoading(false);
             } else {
                 if (isDisconnectError(error)) {
-                    showWebsocketDisconnectError();
+                    snackbarKeys.push(showWebsocketDisconnectError());
                 } else {
                     setErrMsg(e);
                 }
@@ -47,7 +50,12 @@ export default function ContainersList() {
         };
 
         const cancel = aioProvider().containersList(onData, onError);
-        return () => cancel();
+        return () => {
+            cancel();
+            for (const key of snackbarKeys) {
+                closeSnackbar(key);
+            }
+        };
     }, [loading, navigate]);
 
     const barButtons = useMemo(() => (

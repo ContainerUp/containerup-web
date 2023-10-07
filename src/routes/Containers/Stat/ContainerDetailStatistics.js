@@ -90,7 +90,7 @@ export default function ContainerDetailStatistics() {
     const chartBlockRef = useRef();
 
     useEffect(() => {
-        let snackbarKeys = [];
+        const snackbarKeys = [];
         let [netInLast, netOutLast, blockInLast, blockOutLast] = [-1, -1, -1, -1];
         let lastUpdate = 0;
 
