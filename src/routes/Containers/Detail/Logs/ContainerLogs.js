@@ -2,7 +2,7 @@ import {useParams} from "react-router-dom";
 import ContainerLogsTerminal from "./ContainerLogsTerminal";
 import ContainerLogsSettings from "./ContainerLogsSettings";
 import {useState} from "react";
-import Pipe from "../../../lib/Pipe";
+import Pipe from "../../../../lib/Pipe";
 
 export default function ContainerLogs() {
     const {containerId} = useParams();

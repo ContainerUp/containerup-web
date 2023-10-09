@@ -1,7 +1,7 @@
 import ContainerExecOptions from "./ContainerExecOptions";
 import {useState} from "react";
 import {useParams} from "react-router-dom";
-import {getTwoWayPipeSides} from "../../../lib/TwoWayPipe";
+import {getTwoWayPipeSides} from "../../../../lib/TwoWayPipe";
 import ContainerExecTerminal from "./ContainerExecTerminal";
 
 export default function ContainerExec() {

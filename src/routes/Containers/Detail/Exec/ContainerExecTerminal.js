@@ -1,10 +1,10 @@
-import MyTerminalTwoWay from "../../../components/MyTerminalTwoWay";
+import MyTerminalTwoWay from "../../../../components/MyTerminalTwoWay";
 import {Box} from "@mui/material";
-import TwoWayPipe from "../../../lib/TwoWayPipe";
+import TwoWayPipe from "../../../../lib/TwoWayPipe";
 import {useNavigate} from "react-router-dom";
 import {useCallback, useEffect} from "react";
-import term from "../../../lib/termUtil";
-import dataModel from "../../../lib/dataModel";
+import term from "../../../../lib/termUtil";
+import dataModel from "../../../../lib/dataModel";
 
 const makeResizeData = (cols, rows) => {
     // r + ....

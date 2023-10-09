@@ -19,13 +19,13 @@ import Root from './routes/Root';
 import Login from './routes/Login';
 import ContainersList from "./routes/Containers/List/ContainersList";
 import ImageList from "./routes/Images/List/ImageList";
-import ContainerDetail from "./routes/Containers/ContainerDetail";
-import ContainerDetailOverview from "./routes/Containers/Overview/ContainerDetailOverview";
-import ContainerDetailInspect from "./routes/Containers/Inspect/ContainerDetailInspect";
-import ContainerLogs from "./routes/Containers/Logs/ContainerLogs";
-import ContainerDetailStatistics from "./routes/Containers/Stat/ContainerDetailStatistics";
-import ContainerExec from "./routes/Containers/Exec/ContainerExec";
-import ContainerDetailSettings from "./routes/Containers/ContainerDetailSettings";
+import ContainerDetail from "./routes/Containers/Detail/ContainerDetail";
+import ContainerDetailOverview from "./routes/Containers/Detail/Overview/ContainerDetailOverview";
+import ContainerDetailInspect from "./routes/Containers/Detail/Inspect/ContainerDetailInspect";
+import ContainerLogs from "./routes/Containers/Detail/Logs/ContainerLogs";
+import ContainerDetailStatistics from "./routes/Containers/Detail/Stat/ContainerDetailStatistics";
+import ContainerExec from "./routes/Containers/Detail/Exec/ContainerExec";
+import ContainerDetailSettings from "./routes/Containers/Detail/ContainerDetailSettings";
 import SystemInfo from "./routes/System/SystemInfo";
 import ImageDetail from "./routes/Images/Detail/ImageDetail";
 import ContainerCreate from "./routes/Containers/Create/ContainerCreate";
@@ -36,18 +36,21 @@ import {
     TimeScale,
     PointElement,
     LineElement,
+    ArcElement,
     Title,
     Tooltip,
     Filler,
     Legend,
 } from 'chart.js';
 import 'chartjs-adapter-date-fns';
+import Overview from "./routes/Overview/Overview";
 
 ChartJS.register(
     LinearScale,
     TimeScale,
     PointElement,
     LineElement,
+    ArcElement,
     Title,
     Tooltip,
     Filler,
@@ -66,6 +69,9 @@ const router = createBrowserRouter([{
     path: "/",
     element: <Root />,
     children: [{
+        path: '/overview',
+        element: <Overview />
+    }, {
         path: '/containers',
         element: <ContainersList />,
     }, {

@@ -219,11 +219,20 @@ const aioMain = onAioClose => {
         writer({index: index, action: 'unsubscribeToContainerStats', data: oldIndex});
     };
 
+    const _subSysStat = (index, id) => {
+        writer({index: parseInt(index), action: 'subscribeToSystemStats', data: id});
+    };
+
+    const _unsubSysStat = (index, oldIndex) => {
+        writer({index: index, action: 'unsubscribeToSystemStats', data: oldIndex});
+    };
+
     return {
         containersList: (onData, onError) => commonSubscribe(_subContainersList, _unsubContainersList, onData, onError),
         container: (id, onData, onError) => commonSubscribe(_subContainer, _unsubContainer, onData, onError, id),
         imagesList: (onData, onError) => commonSubscribe(_subImagesList, _unsubImagesList, onData, onError),
         containerStatistics: (id, onData, onError) => commonSubscribe(_subContainersStat, _unsubContainersStat, onData, onError, id),
+        systemStats: (onData, onError) => commonSubscribe(_subSysStat, _unsubSysStat, onData, onError),
     };
 };
 

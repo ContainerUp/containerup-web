@@ -1,7 +1,7 @@
 import {Box} from "@mui/material";
 import {getController} from "../lib/HostGuestController";
 import {useEffect, useState} from "react";
-import ContainerDetailButtons from "./Containers/ContainerDetailButtons";
+import ContainerDetailButtons from "./Containers/Detail/ContainerDetailButtons";
 
 const emptyElement = <></>;
 

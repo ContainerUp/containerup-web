@@ -1,10 +1,10 @@
 import {Box, Tab, Tabs} from "@mui/material";
 import {Link, Outlet, useLocation, useNavigate, useParams} from "react-router-dom";
 import {useEffect, useMemo, useState} from "react";
-import {getController} from "../../lib/HostGuestController";
-import {aioProvider, isDisconnectError} from "../../lib/dataProvidor";
-import dataModel from "../../lib/dataModel";
-import {showWebsocketDisconnectError} from "../../components/WebsocketDisconnectError";
+import {getController} from "../../../lib/HostGuestController";
+import {aioProvider, isDisconnectError} from "../../../lib/dataProvidor";
+import dataModel from "../../../lib/dataModel";
+import {showWebsocketDisconnectError} from "../../../components/WebsocketDisconnectError";
 import {closeSnackbar} from "notistack";
 
 const tabs = [{

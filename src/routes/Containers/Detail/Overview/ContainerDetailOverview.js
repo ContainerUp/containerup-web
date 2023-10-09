@@ -1,11 +1,11 @@
 import {useOutletContext} from "react-router-dom";
-import MyDataTable from "../../../components/MyDataTable";
+import MyDataTable from "../../../../components/MyDataTable";
 import {useMemo} from "react";
 import {Alert, Box, Chip, Skeleton, Stack} from "@mui/material";
-import ContainerStatus from "../ContainerStatus";
-import timeUtil from "../../../lib/timeUtil";
-import sizeUtil from "../../../lib/sizeUtil";
-import CreatedAt from "../../../components/CreatedAt";
+import ContainerStatus from "../../ContainerStatus";
+import timeUtil from "../../../../lib/timeUtil";
+import sizeUtil from "../../../../lib/sizeUtil";
+import CreatedAt from "../../../../components/CreatedAt";
 
 const dataKeys = [
     {

@@ -1,5 +1,5 @@
 import {useEffect, useRef} from "react";
-import {aioProvider} from "../../../lib/dataProvidor";
+import {aioProvider} from "../../../../lib/dataProvidor";
 import {useParams} from "react-router-dom";
 import {Line} from "react-chartjs-2";
 import {Box} from "@mui/material";
@@ -92,7 +92,7 @@ export default function ContainerDetailStatistics() {
     useEffect(() => {
         const snackbarKeys = [];
         let [netInLast, netOutLast, blockInLast, blockOutLast] = [-1, -1, -1, -1];
-        let lastUpdate = 0;
+        let first = true;
 
         const onData = data => {
             const chartCpu = chartCpuRef.current;
@@ -109,7 +109,7 @@ export default function ContainerDetailStatistics() {
             if (data.Stats && data.Stats.length === 1) {
                 const d = data.Stats[0];
                 const now = Date.now();
-                const deltaSec = lastUpdate ? (now - lastUpdate) / 1000 : 1;
+                const deltaSec = first ? 1 : 5;
 
                 charts.forEach(chart => {
                     chart.options.scales.x.min = now - 3 * 60 * 1000;
@@ -146,7 +146,6 @@ export default function ContainerDetailStatistics() {
                     [blockInLast, blockOutLast] = [blockIn, blockOut];
                 }
 
-                lastUpdate = now;
                 charts.forEach(chart => {
                     for (;chart.data.datasets[0].data.length > 60 / 5 * 3;) {
                         chart.data.datasets[0].data.shift();
@@ -173,6 +172,10 @@ export default function ContainerDetailStatistics() {
             }
         };
     }, [containerId]);
+
+    useEffect(() => {
+        document.title = 'ContainerUp - Overview';
+    }, []);
 
     return (
         <Box sx={{display: 'flex', maxWidth: 1200, flexWrap: 'wrap'}}>

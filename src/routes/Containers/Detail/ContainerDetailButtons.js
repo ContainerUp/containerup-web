@@ -9,12 +9,12 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import {useCallback, useEffect, useState} from "react";
 import StopIcon from "@mui/icons-material/Stop";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import {getController} from "../../lib/HostGuestController";
-import dataModel from "../../lib/dataModel";
+import {getController} from "../../../lib/HostGuestController";
+import dataModel from "../../../lib/dataModel";
 import {enqueueSnackbar} from "notistack";
 import {useLocation, useNavigate} from "react-router-dom";
-import ContainerDialogRemove from "./List/ContainerDialogRemove";
-import ContainerDialogCommit from "./List/ContainerDialogCommit";
+import ContainerDialogRemove from "../List/ContainerDialogRemove";
+import ContainerDialogCommit from "../List/ContainerDialogCommit";
 
 const getStatusText = c => {
     if (!c || !c.State) {

@@ -3,6 +3,7 @@ import MyDrawer from "../components/MyDrawer";
 import MyDrawerItem from "../components/MyDrawerItem";
 import List from "@mui/material/List";
 import {useEffect, useState} from 'react';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import LogoutIcon from '@mui/icons-material/Logout';
 import StorageIcon from '@mui/icons-material/Storage';
 import AlbumIcon from '@mui/icons-material/Album';
@@ -31,7 +32,7 @@ export default function Root() {
     const navigate = useNavigate();
     useEffect(() => {
         if (!outlet) {
-            navigate('/containers');
+            navigate('/overview');
         }
     }, [navigate, outlet]);
 
@@ -44,12 +45,12 @@ export default function Root() {
                 </MyAppBar>
                 <MyDrawer open={drawerOpen} onClose={handleDrawerClose}>
                     <List>
-                        {/*<MyDrawerItem*/}
-                        {/*    text="Overview"*/}
-                        {/*    drawerOpen={drawerOpen}*/}
-                        {/*    icon={<DashboardIcon />}*/}
-                        {/*    path='/overview'*/}
-                        {/*/>*/}
+                        <MyDrawerItem
+                            text="Overview"
+                            drawerOpen={drawerOpen}
+                            icon={<DashboardIcon />}
+                            path='/overview'
+                        />
                         <MyDrawerItem
                             text="Containers"
                             drawerOpen={drawerOpen}

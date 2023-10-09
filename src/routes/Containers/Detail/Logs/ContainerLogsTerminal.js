@@ -1,11 +1,11 @@
 import {useCallback, useEffect} from "react";
-import dataModel from "../../../lib/dataModel";
+import dataModel from "../../../../lib/dataModel";
 import {useNavigate} from "react-router-dom";
 import {Box} from "@mui/material";
 
-import term from "../../../lib/termUtil";
-import TwoWayPipe from "../../../lib/TwoWayPipe";
-import MyTerminalTwoWay from "../../../components/MyTerminalTwoWay";
+import term from "../../../../lib/termUtil";
+import TwoWayPipe from "../../../../lib/TwoWayPipe";
+import MyTerminalTwoWay from "../../../../components/MyTerminalTwoWay";
 
 export default function ContainerLogsTerminal({containerId, logOpts, wsTerminationWriter, stopActionOnReceive}) {
     const navigate = useNavigate();
