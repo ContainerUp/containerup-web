@@ -19,11 +19,24 @@ export default function ContainersList() {
     const [containers, setContainers] = useState([]);
 
     useEffect(() => {
-        const snackbarKeys = [];
+        let count = 0;
+
+        let tryConnect = () => {};
+        let cancel = () => {};
+        let retryTimeout = null;
+        let tryCount = 0;
+        let disconnectKey = null;
 
         const onData = data => {
             setContainers(data);
             setLoading(false);
+
+            if (disconnectKey) {
+                closeSnackbar(disconnectKey);
+                disconnectKey = null;
+                tryCount = 0;
+            }
+            count ++;
         };
 
         const onError = error => {
@@ -41,19 +54,46 @@ export default function ContainersList() {
                 setErrMsg(e);
                 setLoading(false);
             } else {
-                if (isDisconnectError(error)) {
-                    snackbarKeys.push(showWebsocketDisconnectError());
+                if (isDisconnectError(error) || count) {
+                    // if count > 0, it must be a disconnect err
+                    if (!disconnectKey) {
+                        // do not show multiple disconnect error
+                        disconnectKey = showWebsocketDisconnectError();
+                    }
+                    retryTimeout = setTimeout(() => {
+                        tryConnect();
+                        retryTimeout = null;
+                    }, 1000 * tryCount * tryCount);
                 } else {
-                    setErrMsg(e);
+                    if (disconnectKey) {
+                        retryTimeout = setTimeout(() => {
+                            tryConnect();
+                            retryTimeout = null;
+                        }, 1000 * tryCount * tryCount);
+                    } else {
+                        // show connect error only when connecting
+                        // no retry
+                        setErrMsg(e);
+                    }
                 }
             }
         };
 
-        const cancel = aioProvider().containersList(onData, onError);
+        tryConnect = () => {
+            count = 0;
+            cancel = aioProvider().containersList(onData, onError);
+            tryCount ++;
+        };
+
+        tryConnect();
         return () => {
             cancel();
-            for (const key of snackbarKeys) {
-                closeSnackbar(key);
+            if (disconnectKey) {
+                closeSnackbar(disconnectKey);
+                disconnectKey = null;
+            }
+            if (retryTimeout) {
+                clearTimeout(retryTimeout);
             }
         };
     }, [loading, navigate]);

@@ -32,6 +32,16 @@ const makeOptions = (title, options) => {
                 display: true,
                 text: title,
             },
+            tooltip: {
+                callbacks: {
+                    label: item => {
+                        if (!item.dataset.label) {
+                            return `${item.formattedValue} ${options.unit}`;
+                        }
+                        return `${item.dataset.label} ${item.formattedValue} ${options.unit}`;
+                    },
+                },
+            }
         }
     };
 
@@ -92,7 +102,6 @@ export default function ContainerDetailStatistics() {
     useEffect(() => {
         const snackbarKeys = [];
         let [netInLast, netOutLast, blockInLast, blockOutLast] = [-1, -1, -1, -1];
-        let first = true;
 
         const onData = data => {
             const chartCpu = chartCpuRef.current;
@@ -109,7 +118,7 @@ export default function ContainerDetailStatistics() {
             if (data.Stats && data.Stats.length === 1) {
                 const d = data.Stats[0];
                 const now = Date.now();
-                const deltaSec = first ? 1 : 5;
+                const interval = 5;
 
                 charts.forEach(chart => {
                     chart.options.scales.x.min = now - 3 * 60 * 1000;
@@ -127,8 +136,8 @@ export default function ContainerDetailStatistics() {
                     const [netIn, netOut] = [d.NetInput, d.NetOutput];
                     if (netInLast >= 0) {
                         let [dIn, dOut] = [netIn ? netIn - netInLast : 0, netOut ? netOut - netOutLast : 0];
-                        dIn = parseFloat((dIn / 1024 / 1024 / deltaSec).toFixed(2));
-                        dOut = parseFloat((dOut / 1024 / 1024 / deltaSec).toFixed(2));
+                        dIn = parseFloat((dIn / 1024 / 1024 / interval).toFixed(2));
+                        dOut = parseFloat((dOut / 1024 / 1024 / interval).toFixed(2));
                         chartNet.data.datasets[0].data.push({x: now, y: dIn});
                         chartNet.data.datasets[1].data.push({x: now, y: dOut});
                     }
@@ -138,8 +147,8 @@ export default function ContainerDetailStatistics() {
                     const [blockIn, blockOut] = [d.BlockInput, d.BlockOutput];
                     if (blockInLast >= 0) {
                         let [dIn, dOut] = [blockIn ? blockIn - blockInLast : 0, blockOut ? blockOut - blockOutLast : 0];
-                        dIn = parseFloat((dIn / 1024 / 1024 / deltaSec).toFixed(2));
-                        dOut = parseFloat((dOut / 1024 / 1024 / deltaSec).toFixed(2));
+                        dIn = parseFloat((dIn / 1024 / 1024 / interval).toFixed(2));
+                        dOut = parseFloat((dOut / 1024 / 1024 / interval).toFixed(2));
                         chartBlock.data.datasets[0].data.push({x: now, y: dIn});
                         chartBlock.data.datasets[1].data.push({x: now, y: dOut});
                     }
@@ -173,23 +182,19 @@ export default function ContainerDetailStatistics() {
         };
     }, [containerId]);
 
-    useEffect(() => {
-        document.title = 'ContainerUp - Overview';
-    }, []);
-
     return (
         <Box sx={{display: 'flex', maxWidth: 1200, flexWrap: 'wrap'}}>
             <ChartWrapper>
                 <Line
                     ref={chartCpuRef}
-                    options={makeOptions('CPU %', {suggestedMax: 1})}
+                    options={makeOptions('CPU %', {suggestedMax: 1, unit: '%'})}
                     data={makeData()}
                 />
             </ChartWrapper>
             <ChartWrapper>
                 <Line
                     ref={chartMemRef}
-                    options={makeOptions('Memory MB', {suggestedMax: 32})}
+                    options={makeOptions('Memory MB', {suggestedMax: 32, unit: 'MB'})}
                     data={makeData()}
                 />
             </ChartWrapper>
@@ -197,14 +202,14 @@ export default function ContainerDetailStatistics() {
             <ChartWrapper>
                 <Line
                     ref={chartNetRef}
-                    options={makeOptions('Network MB/s', {suggestedMax: 0.1})}
+                    options={makeOptions('Network MB/s', {suggestedMax: 0.1, unit: 'MB/s'})}
                     data={makeDataInOut(["In", "Out"])}
                 />
             </ChartWrapper>
             <ChartWrapper>
                 <Line
                     ref={chartBlockRef}
-                    options={makeOptions('Block IO MB/s', {suggestedMax: 0.1})}
+                    options={makeOptions('Block IO MB/s', {suggestedMax: 0.1, unit: 'MB/s'})}
                     data={makeDataInOut(["Read", "Write"])}
                 />
             </ChartWrapper>

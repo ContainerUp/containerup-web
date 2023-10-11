@@ -79,6 +79,7 @@ export default function Overview() {
     const [net, setNet] = useState({in: 0, out: 0});
     const [block, setBlock] = useState({read: 0, write: 0});
     const [loading, setLoading] = useState(false);
+    const [dataCount, setDataCount] = useState(0);
 
     useEffect(() => {
         const snackbarKeys = [];
@@ -104,6 +105,7 @@ export default function Overview() {
             }
 
             count ++;
+            setDataCount(c => c + 1);
 
             {
                 const cpu_podman = parseFloat((data.cpu_podman * 100).toFixed(2));
@@ -184,7 +186,12 @@ export default function Overview() {
                     retryTimeout = null;
                 }, 1000 * tryCount * tryCount);
             } else {
-                if (!disconnectKey) {
+                if (disconnectKey) {
+                    retryTimeout = setTimeout(() => {
+                        tryConnect();
+                        retryTimeout = null;
+                    }, 1000 * tryCount * tryCount);
+                } else {
                     // show connect error only when connecting
                     // no retry
                     snackbarKeys.push(enqueueSnackbar(e, {
@@ -196,6 +203,7 @@ export default function Overview() {
         };
 
         tryConnect = () => {
+            count = 0;
             cancel = aioProvider().systemStats(onData, onError);
             tryCount ++;
         };
@@ -215,6 +223,10 @@ export default function Overview() {
             }
         };
     }, [navigate]);
+
+    useEffect(() => {
+        document.title = 'ContainerUp - Overview';
+    }, []);
 
     return (
         <Box sx={{width: 800}}>
@@ -287,11 +299,11 @@ export default function Overview() {
                         </Typography>
                         <Typography component="div" sx={{lineHeight: 3, display: 'flex'}}>
                             <Box sx={{flexGrow: 1}}>In:</Box>
-                            <Box>{loading ? '...' : net.in} MB/s</Box>
+                            <Box>{loading || dataCount < 2 ? '...' : net.in} MB/s</Box>
                         </Typography>
                         <Typography component="div" sx={{lineHeight: 3, display: 'flex'}}>
                             <Box sx={{flexGrow: 1}}>Out:</Box>
-                            <Box>{loading ? '...' : net.out} MB/s</Box>
+                            <Box>{loading || dataCount < 2 ? '...' : net.out} MB/s</Box>
                         </Typography>
                     </CardContent>
                 </Card>
@@ -306,11 +318,11 @@ export default function Overview() {
                         </Typography>
                         <Typography component="div" sx={{lineHeight: 3, display: 'flex'}}>
                             <Box sx={{flexGrow: 1}}>Read:</Box>
-                            <Box>{loading ? '...' : block.read} MB/s</Box>
+                            <Box>{loading || dataCount < 2 ? '...' : block.read} MB/s</Box>
                         </Typography>
                         <Typography component="div" sx={{lineHeight: 3, display: 'flex'}}>
                             <Box sx={{flexGrow: 1}}>Write:</Box>
-                            <Box>{loading ? '...' : block.write} MB/s</Box>
+                            <Box>{loading || dataCount < 2 ? '...' : block.write} MB/s</Box>
                         </Typography>
                     </CardContent>
                 </Card>
