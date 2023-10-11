@@ -272,17 +272,17 @@ export default function AccordionResources() {
     };
 
     const texts = [];
-    if (res.setCpuShares) {
+    if (res.cpuShares) {
         texts.push("CPU shares: " + res.cpuShares);
     }
-    if (res.setLimitCpu) {
+    if (res.cpuCores) {
         texts.push("CPU cores: " + res.cpuCores);
     }
-    if (res.setLimitMemory) {
-        texts.push("Memory: " + res.memoryMB + "MB");
+    if (res.memoryMB) {
+        texts.push("Memory: " + res.memoryMB + " MB");
     }
-    if (res.setLimitMemorySwap) {
-        texts.push("Memory+Swap: " + res.memorySwapMB + "MB");
+    if (res.memorySwapMB) {
+        texts.push("Memory+Swap: " + res.memorySwapMB + " MB");
     }
     const text = texts.join(", ");
 
