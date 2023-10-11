@@ -27,18 +27,46 @@ const Volume = ({volume, editing, onChange, onEditing, onDelete, disabled}) => {
     const inputRefContainer = useRef();
     const inputRefHost = useRef();
     const [editVolume, setEditVolume] = useState(volume);
-    const [submitTries, setSubmitTries] = useState(0);
     const [dupVal, setDupVal] = useState(undefined);
 
-    // Do not show error before first submit, for better experience
-    const suppressError = submitTries === 0;
-    const invalidContainer = !editVolume.container;
-    const invalidHost = !editVolume.predefined && !editVolume.host;
+    const [touchedContainer, setTouchedContainer] = useState(false);
+    const invalidContainer = useMemo(() => {
+        const val = editVolume.container;
+        return !val || val.length === 1 || val[0] !== '/' || val === dupVal;
+    }, [dupVal, editVolume]);
+
+    const [touchedHost, setTouchedHost] = useState(false);
+    const invalidHost = useMemo(() => {
+        const val = editVolume.host;
+        if (!val) {
+            return !editVolume.predefined;
+        }
+        return val.length === 1 || val[0] !== '/';
+    }, [editVolume]);
+
+    const handleChangeContainer = event => {
+        const val = event.target.value;
+        setEditVolume({
+            ...editVolume,
+            container: val
+        });
+        setTouchedContainer(true);
+    };
+
+    const handleChangeHost = event => {
+        const val = event.target.value;
+        setEditVolume({
+            ...editVolume,
+            host: val
+        });
+        setTouchedHost(true);
+    };
 
     const handleSubmit = event => {
         event.preventDefault();
 
-        setSubmitTries(t => t + 1);
+        setTouchedContainer(true);
+        setTouchedHost(true);
 
         if (invalidContainer || invalidHost) {
             if (invalidContainer) {
@@ -56,7 +84,6 @@ const Volume = ({volume, editing, onChange, onEditing, onDelete, disabled}) => {
         }
 
         setDupVal(undefined);
-        setSubmitTries(0);
         onEditing(false);
     };
 
@@ -100,11 +127,8 @@ const Volume = ({volume, editing, onChange, onEditing, onDelete, disabled}) => {
                 value={editVolume.container}
                 sx={{ width: '250px' }}
                 disabled={!editing || volume.predefined}
-                onChange={event => setEditVolume({
-                    ...editVolume,
-                    container: event.target.value
-                })}
-                error={(!suppressError && invalidContainer) || (editVolume.container === dupVal)}
+                onChange={handleChangeContainer}
+                error={invalidContainer && touchedContainer}
                 inputRef={inputRefContainer}
                 helperText={helperTextContainer}
             />
@@ -115,11 +139,8 @@ const Volume = ({volume, editing, onChange, onEditing, onDelete, disabled}) => {
                 value={editVolume.host}
                 sx={{ width: '250px' }}
                 disabled={!editing}
-                onChange={event => setEditVolume({
-                    ...editVolume,
-                    host: event.target.value
-                })}
-                error={!suppressError && invalidHost}
+                onChange={handleChangeHost}
+                error={invalidHost && touchedHost}
                 inputRef={inputRefHost}
                 helperText={volume.predefined && editing ? 'Leave empty to ignore' : ''}
             />
