@@ -5,12 +5,13 @@ import MyAppBar from "../components/MyAppBar";
 
 import {useEffect, useState} from "react";
 import dataModel from '../lib/dataModel';
-import {Container, Snackbar, Alert} from "@mui/material";
+import {Container, Alert} from "@mui/material";
 import {useNavigate, useSearchParams} from "react-router-dom";
 import {AlertTitle} from "@mui/lab";
 import {grey} from "@mui/material/colors";
 import ContainerUpLearnMore from "../components/ContainerUpLearnMore";
 import {useGA4} from "../lib/ga4";
+import {enqueueSnackbar, SnackbarProvider} from "notistack";
 
 let defaultUsername = '';
 let defaultPassword = '';
@@ -25,15 +26,12 @@ export default function Login() {
     const [username, setUsername] = useState(defaultUsername);
     const [password, setPassword] = useState(defaultPassword);
     const [loading, setLoading] = useState(false);
-    const [showAlert, setShowAlert] = useState(false);
-    const [errMsg, setErrMsg] = useState('');
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
     const handleSubmit = event => {
         event.preventDefault();
         setLoading(true);
-        setShowAlert(false);
         dataModel.login(username, password)
             .then(() => {
                 let to = '/';
@@ -50,16 +48,13 @@ export default function Login() {
                         e = "Incorrect username or password";
                     }
                 }
-                setShowAlert(true);
-                setErrMsg(e);
+                enqueueSnackbar(e, {
+                    variant: 'error'
+                });
             })
             .finally(() => {
                 setLoading(false);
             });
-    };
-
-    const handleCloseSnackbar = () => {
-        setShowAlert(false);
     };
 
     useEffect(() => {
@@ -77,11 +72,7 @@ export default function Login() {
                 </Typography>
             </MyAppBar>
 
-            <Snackbar open={showAlert} autoHideDuration={5000} onClose={handleCloseSnackbar}>
-                <Alert onClose={handleCloseSnackbar} severity="error">
-                    {errMsg}
-                </Alert>
-            </Snackbar>
+            <SnackbarProvider />
 
             <Container maxWidth="xs" sx={{marginTop: '96px'}}>
                 <form onSubmit={handleSubmit}>
