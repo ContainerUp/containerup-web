@@ -5,11 +5,17 @@ import {showWebsocketDisconnectError} from "../../components/WebsocketDisconnect
 import {closeSnackbar, enqueueSnackbar} from "notistack";
 import {useNavigate} from "react-router-dom";
 import {Doughnut} from "react-chartjs-2";
-import {Box, Card, CardContent, Stack} from "@mui/material";
+import {Box, Card, CardContent, Stack, Tooltip} from "@mui/material";
 import Typography from "@mui/material/Typography";
+import InfoIcon from '@mui/icons-material/Info';
+import ContainerUpLearnMore from "../../components/ContainerUpLearnMore";
 
 const minPerc = 0.01;
 const loadingColor = 'rgb(100, 100, 100)';
+
+const netDesc = "The values are summed up by all containers. Thus inter-container traffics are included, " +
+    "but other traffics on the host are excluded.";
+const blockDesc = "The values are summed up by all containers. Other disk activities on the host are excluded.";
 
 const makeOptions = (title, unit) => {
     return {
@@ -42,19 +48,19 @@ const makeOptions = (title, unit) => {
     };
 };
 
-const makeData = () => {
+const makeData = (loading = false) => {
     return {
         labels: [
             'Podman',
             'Other',
-            'Available'
+            loading ? 'Loading...' : 'Available'
         ],
         datasets: [{
-            data: [{val: 0, raw: 0}, {val: 0, raw: 0}, {val: 1, raw: 0}],
+            data: [{val: 0, raw: 0}, {val: 0, raw: 0}, {val: 1, raw: 0, loading}],
             backgroundColor: [
                 'rgb(123, 31, 162)',
                 'rgb(235,163,54)',
-                'rgb(220,220,220)'
+                loading ? loadingColor : 'rgb(220,220,220)'
             ]
         }]
     };
@@ -68,18 +74,29 @@ export default function Overview() {
     const [memOptions] = useState(() => makeOptions("Memory", "MB"));
     const [memData, setMemData] = useState(() => makeData());
 
-    const [ctnTotal, setCtnTotal] = useState(0);
-    const [ctnRunning, setCtnRunning] = useState(0);
-    const [imgTotal, setImgTotal] = useState(0);
-    const [imgInUse, setImgInUse] = useState(0);
+    const [ctn, setCtn] = useState({total: 0, running: 0});
+    const [img, setImg] = useState({total: 0, in_use: 0});
+    const [net, setNet] = useState({in: 0, out: 0});
+    const [block, setBlock] = useState({read: 0, write: 0});
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const snackbarKeys = [];
         let count = 0;
 
+        let tryConnect = () => {};
+        let cancel = () => {};
+        let retryTimeout = null;
+        let tryCount = 0;
+        let disconnectKey = null;
+
         const onData = data => {
             setLoading(false);
+            if (disconnectKey) {
+                closeSnackbar(disconnectKey);
+                disconnectKey = null;
+                tryCount = 0;
+            }
 
             if (!data) {
                 snackbarKeys.push(enqueueSnackbar("The statistics data stream is ended.", {variant: 'warning'}));
@@ -94,7 +111,7 @@ export default function Overview() {
                 const cpu_total = data.cpu_total * 100;
                 const cpu_idle = cpu_total - cpu_podman - cpu_other;
 
-                const cpuData = makeData();
+                const cpuData = makeData(count < 2);
                 cpuData.datasets[0].data = [{
                     val: cpu_podman < cpu_total * minPerc && count > 1 ? cpu_total * minPerc : cpu_podman,
                     raw: cpu_podman
@@ -107,8 +124,6 @@ export default function Overview() {
                 }];
                 if (count < 2) {
                     cpuData.datasets[0].data[2].loading = true;
-                    cpuData.datasets[0].backgroundColor[2] = loadingColor;
-                    cpuData.labels[2] = 'Loading';
                 }
                 setCpuData(cpuData);
             }
@@ -133,10 +148,16 @@ export default function Overview() {
                 setMemData(memData);
             }
 
-            setCtnTotal(data.containers_total);
-            setCtnRunning(data.containers_running);
-            setImgTotal(data.images_total);
-            setImgInUse(data.images_in_use);
+            setCtn({total: data.containers_total, running: data.containers_running});
+            setImg({total: data.images_total, in_use: data.images_in_use});
+            setNet({
+                in: (data.network_in / 1024 / 1024).toFixed(1),
+                out: (data.network_out / 1024 / 1024).toFixed(1)
+            });
+            setBlock({
+                read: (data.block_in / 1024 / 1024).toFixed(1),
+                write: (data.block_out / 1024 / 1024).toFixed(1)
+            });
         };
 
         const onError = error => {
@@ -153,20 +174,44 @@ export default function Overview() {
                 e = error.response.data;
             }
             if (isDisconnectError(error) || count) {
-                snackbarKeys.push(showWebsocketDisconnectError());
+                // if count > 0, it must be a disconnect err
+                if (!disconnectKey) {
+                    // do not show multiple disconnect error
+                    disconnectKey = showWebsocketDisconnectError();
+                }
+                retryTimeout = setTimeout(() => {
+                    tryConnect();
+                    retryTimeout = null;
+                }, 1000 * tryCount * tryCount);
             } else {
-                snackbarKeys.push(enqueueSnackbar(e, {
-                    variant: "error",
-                    persist: true
-                }));
+                if (!disconnectKey) {
+                    // show connect error only when connecting
+                    // no retry
+                    snackbarKeys.push(enqueueSnackbar(e, {
+                        variant: "error",
+                        persist: true
+                    }));
+                }
             }
         };
 
-        const cancel = aioProvider().systemStats(onData, onError);
+        tryConnect = () => {
+            cancel = aioProvider().systemStats(onData, onError);
+            tryCount ++;
+        };
+
+        tryConnect();
         return () => {
             cancel();
             for (const key of snackbarKeys) {
                 closeSnackbar(key);
+            }
+            if (disconnectKey) {
+                closeSnackbar(disconnectKey);
+                disconnectKey = null;
+            }
+            if (retryTimeout) {
+                clearTimeout(retryTimeout);
             }
         };
     }, [navigate]);
@@ -176,7 +221,7 @@ export default function Overview() {
             <Card>
                 <CardContent>
                     <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom align="center">
-                        System performance
+                        System resources
                     </Typography>
 
                     <Stack direction="row" sx={{height: 200}}>
@@ -198,38 +243,80 @@ export default function Overview() {
                 </CardContent>
             </Card>
 
-            <Stack direction="row" sx={{mt: '16px', width: 800}}>
-                <Card sx={{width: 392}}>
+            <Stack direction="row" sx={{margin: '16px 0', width: 800}}>
+                <Card sx={{width: 188}}>
                     <CardContent>
                         <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom align="center">
                             Containers
                         </Typography>
-                        <Typography component="div" sx={{lineHeight: 3}}>
-                            Total: {loading ? '...' : ctnTotal}
+                        <Typography component="div" sx={{lineHeight: 3, display: 'flex'}}>
+                            <Box sx={{flexGrow: 1}}>Total:</Box>
+                            <Box>{loading ? '...' : ctn.total}</Box>
                         </Typography>
-                        <Typography component="div">
-                            Running: {loading ? '...' : ctnRunning}
+                        <Typography component="div" sx={{lineHeight: 3, display: 'flex'}}>
+                            <Box sx={{flexGrow: 1}}>Running:</Box>
+                            <Box>{loading ? '...' : ctn.running}</Box>
                         </Typography>
                     </CardContent>
                 </Card>
 
-                <Card sx={{ml: '16px', width: 392}}>
+                <Card sx={{ml: '16px', width: 188}}>
                     <CardContent>
                         <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom align="center">
                             Images
                         </Typography>
-                        <Typography component="div" sx={{lineHeight: 3}}>
-                            Total: {loading ? '...' : imgTotal}
+
+                        <Typography component="div" sx={{lineHeight: 3, display: 'flex'}}>
+                            <Box sx={{flexGrow: 1}}>Total:</Box>
+                            <Box>{loading ? '...' : img.total}</Box>
                         </Typography>
-                        <Typography component="div">
-                            Running: {loading ? '...' : imgInUse}
+                        <Typography component="div" sx={{lineHeight: 3, display: 'flex'}}>
+                            <Box sx={{flexGrow: 1}}>In use:</Box>
+                            <Box>{loading ? '...' : img.in_use}</Box>
                         </Typography>
                     </CardContent>
+                </Card>
 
+                <Card sx={{ml: '16px', width: 188}}>
+                    <CardContent>
+                        <Typography sx={{ fontSize: 14, display: 'flex', justifyContent: 'center' }} color="text.secondary" gutterBottom>
+                            Network&nbsp;
+                            <Tooltip title={netDesc}>
+                                <InfoIcon fontSize="small" />
+                            </Tooltip>
+                        </Typography>
+                        <Typography component="div" sx={{lineHeight: 3, display: 'flex'}}>
+                            <Box sx={{flexGrow: 1}}>In:</Box>
+                            <Box>{loading ? '...' : net.in} MB/s</Box>
+                        </Typography>
+                        <Typography component="div" sx={{lineHeight: 3, display: 'flex'}}>
+                            <Box sx={{flexGrow: 1}}>Out:</Box>
+                            <Box>{loading ? '...' : net.out} MB/s</Box>
+                        </Typography>
+                    </CardContent>
+                </Card>
+
+                <Card sx={{ml: '16px', width: 188}}>
+                    <CardContent>
+                        <Typography sx={{ fontSize: 14, display: 'flex', justifyContent: 'center' }} color="text.secondary" gutterBottom>
+                            Block IO&nbsp;
+                            <Tooltip title={blockDesc}>
+                                <InfoIcon fontSize="small" />
+                            </Tooltip>
+                        </Typography>
+                        <Typography component="div" sx={{lineHeight: 3, display: 'flex'}}>
+                            <Box sx={{flexGrow: 1}}>Read:</Box>
+                            <Box>{loading ? '...' : block.read} MB/s</Box>
+                        </Typography>
+                        <Typography component="div" sx={{lineHeight: 3, display: 'flex'}}>
+                            <Box sx={{flexGrow: 1}}>Write:</Box>
+                            <Box>{loading ? '...' : block.write} MB/s</Box>
+                        </Typography>
+                    </CardContent>
                 </Card>
             </Stack>
 
-
+            <ContainerUpLearnMore variant="long" />
         </Box>
 
     );
