@@ -48,6 +48,7 @@ jobs:
         env:
           GIT_REF: ${{ inputs.git_ref }}
           BUILD_NUM: ${{ inputs.build_num }}
+          GENERATE_SOURCEMAP: "false"
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
