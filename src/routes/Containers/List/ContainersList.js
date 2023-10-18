@@ -7,10 +7,11 @@ import {Tooltip} from "@mui/material";
 import {getController} from "../../../lib/HostGuestController";
 import IconButton from "@mui/material/IconButton";
 import {Link as RouterLink} from 'react-router-dom';
-import {aioProvider, isDisconnectError} from "../../../lib/dataProvidor";
-import {showWebsocketDisconnectError} from "../../../components/WebsocketDisconnectError";
+import {aioProvider, isConnectError, isDisconnectError} from "../../../lib/dataProvidor";
+import {showWebsocketDisconnectError} from "../../../components/notifications/WebsocketDisconnectError";
 import ContainerUpLearnMore from "../../../components/ContainerUpLearnMore";
-import {closeSnackbar} from "notistack";
+import {closeSnackbar, enqueueSnackbar} from "notistack";
+import WebsocketConnectError from "../../../components/notifications/WebsocketConnectError";
 
 export default function ContainersList() {
     const [loading, setLoading] = useState(true);
@@ -19,6 +20,7 @@ export default function ContainersList() {
     const [containers, setContainers] = useState([]);
 
     useEffect(() => {
+        const snackbarKeys = [];
         let count = 0;
 
         let tryConnect = () => {};
@@ -51,7 +53,10 @@ export default function ContainersList() {
                 e = error.response.data;
             }
             if (loading) {
-                setErrMsg(e);
+                snackbarKeys.push(enqueueSnackbar(e, {
+                    variant: "error",
+                    persist: true
+                }));
                 setLoading(false);
             } else {
                 if (isDisconnectError(error) || count) {
@@ -73,7 +78,14 @@ export default function ContainersList() {
                     } else {
                         // show connect error only when connecting
                         // no retry
-                        setErrMsg(e);
+                        if (isConnectError(error)) {
+                            snackbarKeys.push(WebsocketConnectError());
+                        } else {
+                            snackbarKeys.push(enqueueSnackbar(e, {
+                                variant: "error",
+                                persist: true
+                            }));
+                        }
                     }
                 }
             }
@@ -88,6 +100,11 @@ export default function ContainersList() {
         tryConnect();
         return () => {
             cancel();
+            for (const key of snackbarKeys) {
+                // todo fix snackbar
+                console.log('close snackbar');
+                closeSnackbar(key);
+            }
             if (disconnectKey) {
                 closeSnackbar(disconnectKey);
                 disconnectKey = null;

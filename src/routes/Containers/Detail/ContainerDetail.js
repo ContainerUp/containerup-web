@@ -4,7 +4,7 @@ import {useEffect, useMemo, useState} from "react";
 import {getController} from "../../../lib/HostGuestController";
 import {aioProvider, isDisconnectError} from "../../../lib/dataProvidor";
 import dataModel from "../../../lib/dataModel";
-import {showWebsocketDisconnectError} from "../../../components/WebsocketDisconnectError";
+import {showWebsocketDisconnectError} from "../../../components/notifications/WebsocketDisconnectError";
 import {closeSnackbar} from "notistack";
 
 const tabs = [{

@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
-import {aioProvider, isDisconnectError} from "../../lib/dataProvidor";
+import {aioProvider, isConnectError, isDisconnectError} from "../../lib/dataProvidor";
 import dataModel from "../../lib/dataModel";
-import {showWebsocketDisconnectError} from "../../components/WebsocketDisconnectError";
+import {showWebsocketDisconnectError} from "../../components/notifications/WebsocketDisconnectError";
 import {closeSnackbar, enqueueSnackbar} from "notistack";
 import {useNavigate} from "react-router-dom";
 import {Doughnut} from "react-chartjs-2";
@@ -9,6 +9,8 @@ import {Box, Card, CardContent, Stack, Tooltip} from "@mui/material";
 import Typography from "@mui/material/Typography";
 import InfoIcon from '@mui/icons-material/Info';
 import ContainerUpLearnMore from "../../components/ContainerUpLearnMore";
+import StatisticsDataEnds from "../../components/notifications/StatisticsDataEnds";
+import WebsocketConnectError from "../../components/notifications/WebsocketConnectError";
 
 const minPerc = 0.01;
 const loadingColor = 'rgb(100, 100, 100)';
@@ -100,7 +102,7 @@ export default function Overview() {
             }
 
             if (!data) {
-                snackbarKeys.push(enqueueSnackbar("The statistics data stream is ended.", {variant: 'warning'}));
+                snackbarKeys.push(StatisticsDataEnds());
                 return;
             }
 
@@ -194,10 +196,14 @@ export default function Overview() {
                 } else {
                     // show connect error only when connecting
                     // no retry
-                    snackbarKeys.push(enqueueSnackbar(e, {
-                        variant: "error",
-                        persist: true
-                    }));
+                    if (isConnectError(error)) {
+                        snackbarKeys.push(WebsocketConnectError());
+                    } else {
+                        snackbarKeys.push(enqueueSnackbar(e, {
+                            variant: "error",
+                            persist: true
+                        }));
+                    }
                 }
             }
         };

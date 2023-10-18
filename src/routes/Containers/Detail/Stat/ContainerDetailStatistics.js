@@ -5,6 +5,7 @@ import {Line} from "react-chartjs-2";
 import {Box} from "@mui/material";
 import {closeSnackbar, enqueueSnackbar} from "notistack";
 import {styled} from "@mui/material/styles";
+import StatisticsDataEnds from "../../../../components/notifications/StatisticsDataEnds";
 
 const makeOptions = (title, options) => {
     const opt = {
@@ -111,7 +112,7 @@ export default function ContainerDetailStatistics() {
             const charts = [chartCpu, chartMem, chartNet, chartBlock];
 
             if (!data) {
-                snackbarKeys.push(enqueueSnackbar("The statistics data stream is ended.", {variant: 'warning'}));
+                snackbarKeys.push(StatisticsDataEnds());
                 return;
             }
 

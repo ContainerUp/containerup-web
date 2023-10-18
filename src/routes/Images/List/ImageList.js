@@ -8,7 +8,7 @@ import ImagesTable from "./ImagesTable";
 import dataModel from "../../../lib/dataModel";
 import ImagePullDialog from "./ImagePullDialog";
 import {aioProvider, isDisconnectError} from "../../../lib/dataProvidor";
-import {showWebsocketDisconnectError} from "../../../components/WebsocketDisconnectError";
+import {showWebsocketDisconnectError} from "../../../components/notifications/WebsocketDisconnectError";
 import ContainerUpLearnMore from "../../../components/ContainerUpLearnMore";
 import {closeSnackbar} from "notistack";
 

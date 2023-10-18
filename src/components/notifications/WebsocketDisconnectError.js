@@ -1,13 +1,11 @@
 import {enqueueSnackbar} from "notistack";
 import {Button} from "@mui/material";
-import RefreshIcon from '@mui/icons-material/Refresh';
 
 export function showWebsocketDisconnectError() {
     const action = (
         <Button
             color="inherit"
             size="small"
-            startIcon={<RefreshIcon />}
             onClick={() => window.location.reload()}
         >
             Reload
