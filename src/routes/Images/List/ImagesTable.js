@@ -1,5 +1,4 @@
 import {
-    Alert,
     Paper,
     Table,
     TableBody,
@@ -11,17 +10,24 @@ import MyTableRowsLoader from "../../../components/MyTableRowsLoader";
 import MyTableRowSingle from "../../../components/MyTableRowSingle";
 import Link from "@mui/material/Link";
 import {Link as RouterLink} from "react-router-dom";
-import {useMemo} from "react";
 import sizeUtil from "../../../lib/sizeUtil";
 import ImageActions from "./ImageActions";
 import CreatedAt from "../../../components/CreatedAt";
 import ImageRepo from "./ImageRepo";
 import {ResponsiveTableCell as TableCell} from "../../../components/ReponsiveTableCell";
+import {useImageListStore} from "./store";
 
-export default function ImagesTable({loading, errMsg, imagesData}) {
-    const imgd = useMemo(() => {
+export default function ImagesTable() {
+    const loading = useImageListStore(state => state.loading);
+    const isErr = useImageListStore(state => !state.images);
+
+    const imgd = useImageListStore(state => {
+        const imagesData = state.images;
+        if (imagesData === null) {
+            return [];
+        }
+
         const ret = [];
-
         for (const img of imagesData) {
             img.idShort = img.Id.substring(0, 12);
             img.sizeHuman = sizeUtil.humanReadableSize(img.Size);
@@ -58,7 +64,7 @@ export default function ImagesTable({loading, errMsg, imagesData}) {
         }
 
         return ret;
-    }, [imagesData]);
+    });
 
     return (
         <TableContainer component={Paper} sx={{maxHeight: "calc(100vh - 96px)"}}>
@@ -79,21 +85,19 @@ export default function ImagesTable({loading, errMsg, imagesData}) {
                         <MyTableRowsLoader rows={3} cols={7} sx={{height: '72px'}} />
                     )}
 
-                    {!!errMsg && (
+                    {isErr && (
                         <MyTableRowSingle cols={7}>
-                            <Alert severity="error">
-                                {errMsg}
-                            </Alert>
+                            ❌ Error occurred.
                         </MyTableRowSingle>
                     )}
 
-                    {!errMsg && !loading && !imagesData.length && (
+                    {!isErr && !loading && !imgd.length && (
                         <MyTableRowSingle cols={7}>
                             No image found. Pull one?
                         </MyTableRowSingle>
                     )}
 
-                    {!errMsg && !loading && imgd.map(img => (
+                    {!isErr && !loading && imgd.map(img => (
                         <TableRow key={img.repo + ':' + img.tag + '@' + img.Id}>
                             <TableCell>
                                 <Link component={RouterLink} to={img.idShort}>

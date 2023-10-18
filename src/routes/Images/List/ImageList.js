@@ -7,17 +7,15 @@ import {getController} from "../../../lib/HostGuestController";
 import ImagesTable from "./ImagesTable";
 import dataModel from "../../../lib/dataModel";
 import ImagePullDialog from "./ImagePullDialog";
-import {aioProvider, isDisconnectError} from "../../../lib/dataProvidor";
+import {aioProvider, isConnectError, isDisconnectError} from "../../../lib/dataProvidor";
 import {showWebsocketDisconnectError} from "../../../components/notifications/WebsocketDisconnectError";
 import ContainerUpLearnMore from "../../../components/ContainerUpLearnMore";
-import {closeSnackbar} from "notistack";
+import {closeSnackbar, enqueueSnackbar} from "notistack";
+import {imageListActions as storeActions} from "./store";
+import showWebsocketConnectError from "../../../components/notifications/WebsocketConnectError";
 
 export default function ImageList() {
-    const [loading, setLoading] = useState(true);
-    const [errMsg, setErrMsg] = useState('');
     const navigate = useNavigate();
-    const [images, setImages] = useState([]);
-
 
     useEffect(() => {
         let count = 0;
@@ -29,8 +27,7 @@ export default function ImageList() {
         let disconnectKey = null;
 
         const onData = data => {
-            setImages(data);
-            setLoading(false);
+            storeActions.setImages(data);
 
             if (disconnectKey) {
                 closeSnackbar(disconnectKey);
@@ -51,9 +48,17 @@ export default function ImageList() {
             if (error.response) {
                 e = error.response.data;
             }
-            if (loading) {
-                setErrMsg(e);
-                setLoading(false);
+            // loading
+            if (count === 0) {
+                if (isConnectError(error)) {
+                    storeActions.pushSnackbarKey(showWebsocketConnectError());
+                } else {
+                    storeActions.pushSnackbarKey(enqueueSnackbar(e, {
+                        variant: "error",
+                        persist: true
+                    }));
+                }
+                storeActions.setError();
             } else {
                 if (isDisconnectError(error) || count) {
                     // if count > 0, it must be a disconnect err
@@ -72,9 +77,10 @@ export default function ImageList() {
                             retryTimeout = null;
                         }, 1000 * tryCount * tryCount);
                     } else {
-                        // show connect error only when connecting
-                        // no retry
-                        setErrMsg(e);
+                        storeActions.pushSnackbarKey(enqueueSnackbar(e, {
+                            variant: "error",
+                            persist: true
+                        }));
                     }
                 }
             }
@@ -89,6 +95,7 @@ export default function ImageList() {
         tryConnect();
         return () => {
             cancel();
+            storeActions.reset();
             if (disconnectKey) {
                 closeSnackbar(disconnectKey);
                 disconnectKey = null;
@@ -97,7 +104,7 @@ export default function ImageList() {
                 clearTimeout(retryTimeout);
             }
         };
-    }, [loading, navigate]);
+    }, [navigate]);
 
     useEffect(() => {
         const ctrl = getController('bar_button');
@@ -117,11 +124,7 @@ export default function ImageList() {
 
     return (
         <>
-            <ImagesTable
-                loading={loading}
-                errMsg={errMsg}
-                imagesData={images}
-            />
+            <ImagesTable />
 
             <ContainerUpLearnMore variant="long" />
         </>

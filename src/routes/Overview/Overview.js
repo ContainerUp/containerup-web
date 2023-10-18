@@ -10,7 +10,7 @@ import Typography from "@mui/material/Typography";
 import InfoIcon from '@mui/icons-material/Info';
 import ContainerUpLearnMore from "../../components/ContainerUpLearnMore";
 import StatisticsDataEnds from "../../components/notifications/StatisticsDataEnds";
-import WebsocketConnectError from "../../components/notifications/WebsocketConnectError";
+import showWebsocketConnectError from "../../components/notifications/WebsocketConnectError";
 
 const minPerc = 0.01;
 const loadingColor = 'rgb(100, 100, 100)';
@@ -117,13 +117,13 @@ export default function Overview() {
 
                 const cpuData = makeData(count < 2);
                 cpuData.datasets[0].data = [{
-                    val: cpu_podman < cpu_total * minPerc && count > 1 ? cpu_total * minPerc : cpu_podman,
+                    val: cpu_podman > 0 && cpu_podman < cpu_total * minPerc && count > 1 ? cpu_total * minPerc : cpu_podman,
                     raw: cpu_podman
                 }, {
                     val: cpu_other < cpu_total * minPerc && count > 1 ? cpu_total * minPerc : cpu_other,
                     raw: cpu_other
                 }, {
-                    val: cpu_idle < cpu_total * minPerc && count > 1 ? cpu_total * minPerc : cpu_idle,
+                    val: cpu_idle,
                     raw: cpu_idle
                 }];
                 if (count < 2) {
@@ -140,13 +140,13 @@ export default function Overview() {
 
                 const memData = makeData();
                 memData.datasets[0].data = [{
-                    val: mem_podman < mem_total * minPerc ? mem_total * minPerc : mem_podman,
+                    val: mem_podman > 0 && mem_podman < mem_total * minPerc ? mem_total * minPerc : mem_podman,
                     raw: mem_podman
                 }, {
                     val: mem_other < mem_total * minPerc ? mem_total * minPerc : mem_other,
                     raw: mem_other
                 }, {
-                    val: mem_idle < mem_total * minPerc ? mem_total * minPerc : mem_idle,
+                    val: mem_idle,
                     raw: mem_idle
                 }];
                 setMemData(memData);
@@ -197,7 +197,7 @@ export default function Overview() {
                     // show connect error only when connecting
                     // no retry
                     if (isConnectError(error)) {
-                        snackbarKeys.push(WebsocketConnectError());
+                        snackbarKeys.push(showWebsocketConnectError());
                     } else {
                         snackbarKeys.push(enqueueSnackbar(e, {
                             variant: "error",
@@ -298,7 +298,7 @@ export default function Overview() {
                 <Card sx={{ml: '16px', width: 188}}>
                     <CardContent>
                         <Typography sx={{ fontSize: 14, display: 'flex', justifyContent: 'center' }} color="text.secondary" gutterBottom>
-                            Network&nbsp;
+                            Podman Network&nbsp;
                             <Tooltip title={netDesc}>
                                 <InfoIcon fontSize="small" />
                             </Tooltip>
@@ -317,7 +317,7 @@ export default function Overview() {
                 <Card sx={{ml: '16px', width: 188}}>
                     <CardContent>
                         <Typography sx={{ fontSize: 14, display: 'flex', justifyContent: 'center' }} color="text.secondary" gutterBottom>
-                            Block IO&nbsp;
+                            Podman Block IO&nbsp;
                             <Tooltip title={blockDesc}>
                                 <InfoIcon fontSize="small" />
                             </Tooltip>

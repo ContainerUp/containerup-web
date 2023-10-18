@@ -1,5 +1,5 @@
 import {
-    Alert, Box,
+    Box,
     Paper, Stack,
     Table,
     TableBody,
@@ -13,13 +13,19 @@ import MyTableRowSingle from "../../../components/MyTableRowSingle";
 import Link from '@mui/material/Link';
 import {Link as RouterLink} from "react-router-dom";
 import ContainerStatus from "../ContainerStatus";
-import {useMemo} from "react";
 import ContainerActions from "./ContainerActions";
 import CreatedAt from "../../../components/CreatedAt";
 import {ResponsiveTableCell as TableCell} from "../../../components/ReponsiveTableCell";
+import {useContainerListStore} from "./store";
 
-export default function ContainersTable({loading, errMsg, containersData}) {
-    const cd = useMemo(() => {
+export default function ContainersTable() {
+    const loading = useContainerListStore(state => state.loading);
+    const isErr = useContainerListStore(state => !state.containers);
+    const cd = useContainerListStore(state => {
+        const containersData = state.containers;
+        if (containersData === null) {
+            return [];
+        }
         return containersData.map(c => {
             c.idShort = c.Id.substring(0, 12);
 
@@ -46,7 +52,7 @@ export default function ContainersTable({loading, errMsg, containersData}) {
 
             return c;
         });
-    }, [containersData]);
+    });
 
     return (
         <TableContainer component={Paper} sx={{maxHeight: "calc(100vh - 96px)"}}>
@@ -67,21 +73,19 @@ export default function ContainersTable({loading, errMsg, containersData}) {
                         <MyTableRowsLoader rows={3} cols={7} sx={{height: '72px'}} />
                     )}
 
-                    {!!errMsg && (
+                    {isErr && !cd.length && (
                         <MyTableRowSingle cols={7}>
-                            <Alert severity="error">
-                                {errMsg}
-                            </Alert>
+                            ❌ Error occurred.
                         </MyTableRowSingle>
                     )}
 
-                    {!errMsg && !loading && !containersData.length && (
+                    {!isErr && !loading && !cd.length && (
                         <MyTableRowSingle cols={7}>
                             No container found. Create one?
                         </MyTableRowSingle>
                     )}
 
-                    {!errMsg && !loading && cd.map(c => (
+                    {!isErr && !loading && cd.map(c => (
                         <TableRow key={c.Id}>
                             <TableCell>
                                 <Link component={RouterLink} to={c.idShort + '/overview'}>

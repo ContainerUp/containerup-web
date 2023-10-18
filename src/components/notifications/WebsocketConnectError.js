@@ -1,7 +1,7 @@
 import {Button} from "@mui/material";
 import {enqueueSnackbar} from "notistack";
 
-export default function WebsocketConnectError() {
+export default function showWebsocketConnectError() {
     const action = (
         <Button
             size="small"
