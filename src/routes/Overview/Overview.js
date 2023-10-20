@@ -197,7 +197,7 @@ export default function Overview() {
                     // show connect error only when connecting
                     // no retry
                     if (isConnectError(error)) {
-                        snackbarKeys.push(showWebsocketConnectError());
+                        snackbarKeys.push(showWebsocketConnectError(true));
                     } else {
                         snackbarKeys.push(enqueueSnackbar(e, {
                             variant: "error",
