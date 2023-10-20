@@ -5,7 +5,7 @@ import {
     Checkbox,
     FormControlLabel,
     FormGroup,
-    Stack
+    Stack, Tooltip
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Typography from "@mui/material/Typography";
@@ -14,6 +14,8 @@ import CheckIcon from "@mui/icons-material/Check";
 import {useEffect, useMemo, useRef, useState} from "react";
 import RestoreIcon from "@mui/icons-material/Restore";
 import {containerActions, uiActions, useContainerStore} from "./store";
+import InfoIcon from "@mui/icons-material/Info";
+import Link from "@mui/material/Link";
 
 function CreateAdv({adv, onEdited, onConfirm}) {
     const [editAdv, setEditAdv] = useState(adv);
@@ -67,7 +69,7 @@ function CreateAdv({adv, onEdited, onConfirm}) {
     return (
         <Stack spacing={3} key={version}>
             <Box sx={{maxWidth: 350}}>
-                <FormGroup>
+                <FormGroup row={true}>
                     <FormControlLabel
                         control={<Checkbox
                             checked={editAdv.start}
@@ -77,7 +79,7 @@ function CreateAdv({adv, onEdited, onConfirm}) {
                     />
                 </FormGroup>
 
-                <FormGroup>
+                <FormGroup row={true}>
                     <FormControlLabel
                         control={<Checkbox
                             checked={editAdv.alwaysRestart}
@@ -85,6 +87,13 @@ function CreateAdv({adv, onEdited, onConfirm}) {
                         />}
                         label="Restart policy: always (default: no)"
                     />
+                    <Typography>
+                        <Tooltip title="Learn more about restart policy">
+                            <Link href="https://containerup.org/faq/#what-is-a-restart-policy"  color="#666666" target="_blank">
+                                <InfoIcon fontSize="small" sx={{mt: '12px'}} />
+                            </Link>
+                        </Tooltip>
+                    </Typography>
                 </FormGroup>
             </Box>
 
