@@ -7,7 +7,7 @@ import {useEffect, useState} from "react";
 import dataModel from '../lib/dataModel';
 import {Container, Alert} from "@mui/material";
 import {useNavigate, useSearchParams} from "react-router-dom";
-import {AlertTitle} from "@mui/lab";
+import AlertTitle from "@mui/material/AlertTitle";
 import {grey} from "@mui/material/colors";
 import ContainerUpLearnMore from "../components/ContainerUpLearnMore";
 import {useGA4} from "../lib/ga4";
