@@ -4,6 +4,13 @@ This repository is the frontend page of the [ContainerUp](https://github.com/Con
 a [Podman](https://podman.io/) manager in your browser.
 It works alongside the [API backend](https://github.com/ContainerUp/containerup) project.
 
+> [!NOTE]
+> If you want to know how to use ContainerUp, visit [containerup.org](https://containerup.org/).
+>
+> If you like this project, ⭐️ give a star, or 💰 sponsor the contributor!
+>
+>  Report **issues** [here](https://github.com/ContainerUp/containerup/issues).
+
 ## How to get started
 
 ### I only need the artifacts
