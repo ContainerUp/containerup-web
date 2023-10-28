@@ -1,5 +1,9 @@
 # ContainerUp Web
 
+> [!WARNING]
+> The frontend project has been moved to the backend project.
+> Find the latest code [there](https://github.com/ContainerUp/containerup/tree/main/web).
+
 This repository is the frontend page of the [ContainerUp](https://github.com/ContainerUp) project,
 a [Podman](https://podman.io/) manager in your browser.
 It works alongside the [API backend](https://github.com/ContainerUp/containerup) project.
